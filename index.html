@@ -140,7 +140,7 @@ input::placeholder,textarea::placeholder{color:var(--ink2);opacity:.65;font-weig
 .slot.art{width:auto;padding:0 10px;color:var(--ink2);font-family:'Nunito',sans-serif;font-size:18px;background:transparent}
 
 /* ---- welcome ---- */
-.welcome .hero{padding:26px 0 4px;text-align:center}
+.welcome .hero{padding:40px 0 8px;text-align:center}
 .apptitle{font-size:36px;font-weight:800;letter-spacing:-.03em;margin:0 0 4px;line-height:1.05}
 .person{justify-content:flex-start;padding:10px 12px;min-height:68px;font-size:18px}
 .avatar{flex:0 0 auto;width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--on-accent);
@@ -644,7 +644,9 @@ function go(t){ stopListening(); tab = t; view = {}; render(); if(screenEl) scre
 function render(){
   var actionEl = document.getElementById("action");
   var who = document.getElementById("who");
+  var topbar = document.querySelector(".topbar");
   if(!profile || tab === "welcome"){
+    topbar.hidden = true;
     document.getElementById("chip-stars").textContent = "";
     document.getElementById("chip-streak").textContent = "";
     who.textContent = ""; who.hidden = true;
@@ -654,6 +656,7 @@ function render(){
     screenEl.appendChild(screenWelcome());
     return;
   }
+  topbar.hidden = false;
   tabbarEl.hidden = false;
   who.hidden = false; who.textContent = ""; who.appendChild(ico("user", 16)); who.appendChild(document.createTextNode(profile.name)); who.title = "Сменить ученика";
   document.getElementById("chip-stars").textContent = (state.stats.stars||0) + " ★";
