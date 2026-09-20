@@ -1,0 +1,1262 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F6F7F9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#13161C" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Ракета слов">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>Ракета слов</title>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}</style>
+</head>
+<body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+:root{
+  --bg:#F6F7F9; --surface:#FFFFFF; --surface2:#F0F2F6;
+  --ink:#1E2430; --ink2:#6A7385; --line:#E3E6EC;
+  --accent:#3B5BDB; --accent-soft:#EDF0FC; --on-accent:#FFFFFF;
+  --good:#2F7D5A; --good-soft:#EBF3EF;
+  --bad:#B04A44; --bad-soft:#FAEEED;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --grape:var(--accent); --grape-soft:var(--accent-soft); --grape-deep:var(--accent);
+  --mint:var(--good); --mint-soft:var(--good-soft); --mint-deep:var(--good);
+  --coral:var(--bad); --coral-soft:var(--bad-soft); --coral-deep:var(--bad);
+  --sun:var(--line); --sun-soft:var(--surface2); --sun-deep:var(--line);
+  --sky:var(--accent); --sky-soft:var(--surface2);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#13161C; --surface:#1B1F27; --surface2:#232832;
+    --ink:#E9EBF0; --ink2:#9BA3B2; --line:#2F3540;
+    --accent:#8FA3FF; --accent-soft:#232941; --on-accent:#0F1424;
+    --good:#67C094; --good-soft:#1A2B24;
+    --bad:#E08A84; --bad-soft:#2E2121;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#13161C; --surface:#1B1F27; --surface2:#232832;
+  --ink:#E9EBF0; --ink2:#9BA3B2; --line:#2F3540;
+  --accent:#8FA3FF; --accent-soft:#232941; --on-accent:#0F1424;
+  --good:#67C094; --good-soft:#1A2B24;
+  --bad:#E08A84; --bad-soft:#2E2121;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:16px;line-height:1.5;
+  -webkit-text-size-adjust:100%}
+#app{display:flex;flex-direction:column;height:100%;max-width:600px;margin:0 auto;background:var(--bg)}
+
+/* ---- top bar ---- */
+.topbar{flex:0 0 auto;display:flex;align-items:baseline;gap:10px;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
+.brand{margin-right:auto;font-weight:800;font-size:17px;letter-spacing:-.01em}
+.chip{font-size:13px;font-weight:700;color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.sync{font-size:11px;color:var(--ink2);cursor:default}
+
+/* ---- screen ---- */
+main#screen{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-block:18px 28px;padding-left:16px;padding-right:16px}
+h2.title{font-size:22px;font-weight:800;letter-spacing:-.015em;margin:0 0 3px;text-wrap:balance}
+p.sub{margin:0 0 16px;color:var(--ink2);font-size:14px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:10px;align-items:center}
+.row.wrap{flex-wrap:wrap}
+.grow{flex:1 1 auto;min-width:0}
+.label{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
+
+/* ---- buttons ---- */
+.btn{appearance:none;-webkit-appearance:none;border:1px solid var(--line);border-radius:12px;padding:12px 16px;min-height:50px;
+  font:inherit;font-weight:700;color:var(--ink);background:var(--surface);cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;text-align:center;
+  transition:background-color .12s ease,border-color .12s ease}
+.btn:active{background:var(--surface2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:800;font-size:17px}
+.btn.good{border-color:var(--good);color:var(--good)}
+.btn.bad{border-color:var(--bad);color:var(--bad)}
+.btn.warn{border-color:var(--line)}
+.btn.ghost{background:transparent;min-height:42px;padding:8px 12px;font-size:14px;font-weight:700;color:var(--ink2)}
+.btn.block{width:100%}
+.btn.small{min-height:38px;padding:6px 12px;font-size:14px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.speaker{width:46px;height:46px;min-height:46px;padding:0;flex:0 0 auto;color:var(--accent)}
+.ico{display:inline-flex;align-items:center;justify-content:center}
+.ico svg{display:block}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---- cards ---- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.hint{background:var(--surface2);border-radius:12px;padding:10px 12px;font-size:14px;color:var(--ink2)}
+
+/* ---- word list ---- */
+.wordlist{display:flex;flex-direction:column;gap:8px}
+.word{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.word.mastered{border-color:var(--good)}
+.word-head{display:flex;align-items:center;gap:12px;padding:10px 12px}
+.word-main{flex:1 1 auto;min-width:0;text-align:left;background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer}
+.word-en{font-size:19px;font-weight:800;line-height:1.2;word-break:break-word;letter-spacing:-.01em}
+.word-ru{color:var(--ink2);font-size:14px;word-break:break-word}
+.dots{display:flex;gap:3px;margin-top:6px}
+.dots i{width:16px;height:3px;border-radius:2px;background:var(--line)}
+.dots i.on{background:var(--good)}
+.tag{display:inline-block;padding:1px 6px;border-radius:4px;background:var(--surface2);color:var(--ink2);
+  font-size:11px;font-weight:700;margin-left:6px;vertical-align:2px;letter-spacing:.02em}
+.word-body{padding:12px;display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--line)}
+.example{background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:15px}
+.example .ru{display:block;color:var(--ink2);font-size:13px;margin-top:3px}
+.mine{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.mine li{background:var(--surface2);border-radius:10px;padding:8px 10px;font-size:14px;display:flex;gap:8px;align-items:center}
+.mine li span{flex:1 1 auto}
+
+/* ---- forms ---- */
+label.field{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700;color:var(--ink2)}
+input[type=text],textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--surface);
+  border:1px solid var(--line);border-radius:10px;padding:12px;width:100%;min-height:48px}
+textarea{min-height:72px;resize:vertical}
+input:focus,textarea:focus{border-color:var(--accent);outline:none}
+input::placeholder,textarea::placeholder{color:var(--ink2);opacity:.55;font-weight:400}
+.err{color:var(--bad);font-size:13px;font-weight:700}
+.mic{width:50px;height:50px;min-height:50px;padding:0;flex:0 0 auto;color:var(--accent)}
+.mic.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 var(--accent-soft)}50%{box-shadow:0 0 0 8px var(--accent-soft)}}
+.micmsg{font-size:14px;color:var(--ink2)}
+.micmsg.live{color:var(--accent);font-weight:700}
+.quick input{min-height:52px;font-size:18px}
+.added{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tag.big{font-size:14px;padding:4px 10px;margin:0;color:var(--ink)}
+.slot.art{width:auto;padding:0 10px;border-style:dashed;color:var(--ink2);font-family:'Nunito',sans-serif;font-size:18px}
+
+/* ---- flashcard ---- */
+.flash{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:28px 18px;text-align:center;
+  display:flex;flex-direction:column;gap:14px;align-items:center}
+.flash .big{font-size:clamp(28px,9vw,40px);font-weight:800;line-height:1.1;word-break:break-word;letter-spacing:-.02em}
+.flash .mid{font-size:20px;font-weight:700;color:var(--ink2)}
+.progressbar{height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.progressbar i{display:block;height:100%;background:var(--accent);transition:width .25s ease}
+
+/* ---- tiles / chips games ---- */
+.slots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;min-height:54px}
+.slot{width:40px;height:50px;border-radius:10px;border:1px solid var(--line);background:var(--surface);
+  display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:22px;font-weight:700}
+.slot.filled{border-color:var(--accent);color:var(--ink)}
+.slot.ok{border-color:var(--good);background:var(--good-soft)}
+.slot.no{border-color:var(--bad);background:var(--bad-soft)}
+.tiles{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.tile{width:46px;height:50px;min-height:50px;padding:0;font-family:var(--mono);font-size:22px;font-weight:700}
+.tile.used{visibility:hidden}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips .btn{min-height:44px;padding:8px 14px;font-size:16px}
+.sentbox{min-height:62px;background:var(--surface2);border-radius:12px;padding:10px;
+  display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.pairs{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.pair{min-height:64px;border-radius:12px;font-size:16px;font-weight:700;padding:8px;word-break:break-word;line-height:1.25}
+.pair.open{border-color:var(--accent);background:var(--accent-soft)}
+.pair.done{border-color:var(--good);color:var(--good);opacity:.6;pointer-events:none}
+
+/* ---- quiz ---- */
+.qcard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px 18px;text-align:center;
+  display:flex;flex-direction:column;gap:14px;align-items:center}
+.qword{font-size:clamp(24px,7vw,34px);font-weight:800;word-break:break-word;letter-spacing:-.02em}
+.options{display:flex;flex-direction:column;gap:8px;width:100%}
+.options .btn{justify-content:flex-start;text-align:left;font-size:16px}
+.options .btn.right{border-color:var(--good);background:var(--good-soft);color:var(--good)}
+.options .btn.wrong{border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
+.verdict{font-size:17px;font-weight:800}
+.verdict.ok{color:var(--good)}
+.verdict.no{color:var(--bad)}
+
+/* ---- awards ---- */
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.badge{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;
+  display:flex;gap:9px;align-items:flex-start}
+.badge .mark{flex:0 0 auto;width:18px;height:18px;border-radius:50%;border:1px solid var(--line);margin-top:1px}
+.badge .nm{font-size:13px;font-weight:700;color:var(--ink2);line-height:1.3}
+.badge.earned{border-color:var(--good)}
+.badge.earned .mark{border-color:var(--good);background:var(--good);position:relative}
+.badge.earned .mark::after{content:"";position:absolute;left:5px;top:3px;width:5px;height:9px;
+  border-right:2px solid var(--surface);border-bottom:2px solid var(--surface);transform:rotate(40deg)}
+.badge.earned .nm{color:var(--ink)}
+.bignum{font-size:32px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.statrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mastery{display:flex;flex-direction:column;gap:10px}
+.mastery .m{display:flex;align-items:center;gap:10px;font-size:15px}
+.mastery .m b{flex:0 0 100px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mastery .m .progressbar{flex:1 1 auto}
+
+/* ---- action bar ---- */
+.action{flex:0 0 auto;padding:10px 16px;background:var(--surface);border-top:1px solid var(--line)}
+.action:empty{display:none}
+
+/* ---- tab bar ---- */
+.tabbar{flex:0 0 auto;display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border-top:1px solid var(--line)}
+.tabbar button{appearance:none;border:0;background:none;padding:14px 2px;min-height:52px;cursor:pointer;
+  color:var(--ink2);font:inherit;font-size:13px;font-weight:700;border-top:2px solid transparent;margin-top:-1px}
+.tabbar button[aria-current="true"]{color:var(--accent);border-top-color:var(--accent)}
+
+/* ---- toast ---- */
+#toast{position:fixed;left:50%;bottom:74px;transform:translateX(-50%);z-index:50;display:flex;flex-direction:column;
+  gap:8px;align-items:center;pointer-events:none;width:max-content;max-width:90vw}
+#toast .t{background:var(--ink);color:var(--bg);border-radius:10px;padding:9px 14px;font-weight:700;font-size:14px}
+.empty{text-align:center;padding:24px 8px;color:var(--ink2)}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+
+<div id="app">
+  <header class="topbar">
+    <div class="brand">Ракета слов</div>
+    <span class="chip" id="chip-stars">0 ★</span>
+    <span class="chip" id="chip-streak">0 дн.</span>
+    <span class="sync" id="sync" title="Где хранятся слова"></span>
+  </header>
+  <main id="screen"></main>
+  <div class="action" id="action"></div>
+  <nav class="tabbar" id="tabbar" aria-label="Разделы"></nav>
+</div>
+<div id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+document.documentElement.lang = "ru";
+
+/* ============== helpers ============== */
+function h(tag, props){
+  var n = document.createElement(tag), k, v, i;
+  props = props || {};
+  for(k in props){ v = props[k];
+    if(k === "class") n.className = v;
+    else if(k === "text") n.textContent = v;
+    else if(k === "html") n.innerHTML = v;
+    else if(k.slice(0,2) === "on" && typeof v === "function") n.addEventListener(k.slice(2), v);
+    else if(v === true) n.setAttribute(k, "");
+    else if(v !== null && v !== undefined && v !== false) n.setAttribute(k, v);
+  }
+  var kids = Array.prototype.slice.call(arguments, 2);
+  for(i=0;i<kids.length;i++) addKid(n, kids[i]);
+  return n;
+}
+function addKid(n, c){
+  if(c === null || c === undefined || c === false) return;
+  if(Array.isArray(c)){ c.forEach(function(x){ addKid(n, x); }); return; }
+  n.appendChild(c.nodeType ? c : document.createTextNode(String(c)));
+}
+function uid(){ return Math.random().toString(36).slice(2,9); }
+function dayKey(ts){ return new Date(ts).toISOString().slice(0,10); }
+function today(){ return dayKey(Date.now()); }
+function shuffle(a){ a = a.slice(); for(var i=a.length-1;i>0;i--){ var j = Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function norm(s){ return String(s||"").toLowerCase().replace(/\s+/g," ").trim(); }
+
+/* ============== data ============== */
+var SEED = [
+  ["a cat","кот, кошка","The cat sleeps on my bed.","Кот спит на моей кровати."],
+  ["a dog","собака","My dog likes to run fast.","Моя собака любит быстро бегать."],
+  ["an apple","яблоко","I eat a big red apple.","Я ем большое красное яблоко."],
+  ["a school","школа","We go to school every day.","Мы ходим в школу каждый день."],
+  ["water","вода","Please give me cold water.","Пожалуйста, дай мне холодной воды."],
+  ["a friend","друг, подруга","My friend is very funny.","Мой друг очень смешной."],
+  ["blue","синий, голубой","The sky is blue today.","Небо сегодня синее."],
+  ["jump","прыгать","I can jump very high.","Я умею прыгать очень высоко."]
+];
+var ARTICLES = ["", "a", "an", "the"];
+function splitArticle(en){
+  var m = /^\s*(a|an|the)\s+(\S.*)$/i.exec(String(en||""));
+  if(m) return { art:m[1].toLowerCase(), en:m[2].trim() };
+  return { art:"", en:String(en||"").trim() };
+}
+function full(w){ return (w.art ? w.art + " " : "") + w.en; }
+function makeWord(en, ru, ex, exRu, sample, art){
+  var sp = splitArticle(en);
+  return { id:uid(), en:sp.en, art: sp.art || (ARTICLES.indexOf(art) > 0 ? art : ""),
+    ru:String(ru).trim(), ex:String(ex||"").trim(),
+    exRu:String(exRu||"").trim(), level:0, right:0, wrong:0, seen:0, lastReview:0,
+    addedAt:Date.now(), sentences:[], sample:!!sample };
+}
+function freshState(){
+  return { rev:0, updatedAt:Date.now(),
+    words: SEED.map(function(s){ return makeWord(s[0],s[1],s[2],s[3],true); }),
+    stats:{ stars:0, streak:0, lastDay:null, tests:0, perfect:0, badges:[] } };
+}
+var state = freshState();
+
+function migrate(raw){
+  var s = { rev: raw.rev || 0, updatedAt: raw.updatedAt || Date.now(), words: [], stats: {} };
+  (raw.words || []).forEach(function(w){
+    if(!w || !w.en || !w.ru) return;
+    var sp = splitArticle(w.en);
+    s.words.push({ id: w.id || uid(), en:sp.en, art: sp.art || (ARTICLES.indexOf(w.art) > 0 ? w.art : ""), ru:String(w.ru), ex:String(w.ex||""), exRu:String(w.exRu||""),
+      level: Math.max(0, Math.min(5, w.level|0)), right:w.right|0, wrong:w.wrong|0, seen:w.seen|0,
+      lastReview: w.lastReview|0, addedAt: w.addedAt || Date.now(),
+      sentences: Array.isArray(w.sentences) ? w.sentences.slice(0,20).map(String) : [], sample: !!w.sample });
+  });
+  var st = raw.stats || {};
+  s.stats = { stars: st.stars|0, streak: st.streak|0, lastDay: st.lastDay || null,
+    tests: st.tests|0, perfect: st.perfect|0, badges: Array.isArray(st.badges) ? st.badges.map(String) : [] };
+  return s;
+}
+
+/* ============== storage: db + localStorage ============== */
+var LS = "raketa-slov-v1";
+var db = null, pending = false, dirty = false, saveTimer = null, hadLocal = false;
+
+function setSync(mode){
+  var el = document.getElementById("sync");
+  if(!el) return;
+  if(mode === "cloud"){ el.textContent = "облако"; el.title = "Слова сохраняются и доступны на всех устройствах"; }
+  else if(mode === "local"){ el.textContent = "только это устройство"; el.title = "Слова сохраняются в этом браузере"; }
+  else { el.textContent = "…"; el.title = "Сохраняю…"; }
+}
+function loadLocal(){
+  try{
+    var raw = localStorage.getItem(LS);
+    if(raw){ var p = JSON.parse(raw); if(p && Array.isArray(p.words) && p.words.length){ state = migrate(p); hadLocal = true; } }
+  }catch(e){}
+}
+function saveLocal(){ try{ localStorage.setItem(LS, JSON.stringify(state)); }catch(e){} }
+function save(){
+  state.rev = (state.rev || 0) + 1;
+  state.updatedAt = Date.now();
+  saveLocal();
+  if(db){ dirty = true; clearTimeout(saveTimer); saveTimer = setTimeout(flush, 700); }
+}
+function flush(){
+  if(!db || pending || !dirty) return;
+  pending = true; dirty = false; setSync("wait");
+  var body = JSON.parse(JSON.stringify(state));
+  db.doc("app/state").set(body).then(function(){
+    pending = false; setSync("cloud");
+    if(dirty) setTimeout(flush, 400);
+  }, function(err){
+    pending = false;
+    if(err && (err.code === "invalid_argument" || err.code === "revoked" || err.code === "not_granted")){
+      db = null; setSync("local");
+    }else{
+      dirty = true; setSync("wait"); setTimeout(flush, 4000);
+    }
+  });
+}
+function initDb(){
+  if(!(window.claude && typeof window.claude.use === "function")){ setSync("local"); return; }
+  window.claude.use("db").then(function(d){
+    if(!d){ setSync("local"); return; }
+    db = d;
+    d.doc("app/state").get().then(function(snap){
+      var remote = snap && snap.exists ? snap.data() : null;
+      if(remote && Array.isArray(remote.words) && remote.words.length && (remote.rev||0) >= (state.rev||0)){
+        state = migrate(remote); saveLocal(); setSync("cloud"); render();
+      }else{
+        dirty = true; flush();
+      }
+      setSync("cloud");
+    }, function(){ setSync("local"); });
+    d.doc("app/state").onSnapshot(function(snap){
+      if(!snap.exists || pending || dirty) return;
+      var r = snap.data();
+      if(!r || !Array.isArray(r.words)) return;
+      if((r.rev||0) > (state.rev||0)){ state = migrate(r); saveLocal(); render(); }
+    }, function(){});
+  }, function(){ setSync("local"); });
+}
+
+/* ============== speech ============== */
+var synth = window.speechSynthesis || null;
+var voices = [];
+function loadVoices(){ if(synth){ try{ voices = synth.getVoices() || []; }catch(e){ voices = []; } } }
+if(synth){ loadVoices(); synth.onvoiceschanged = loadVoices; }
+function enVoice(){
+  var i;
+  for(i=0;i<voices.length;i++) if(/^en[-_]US/i.test(voices[i].lang)) return voices[i];
+  for(i=0;i<voices.length;i++) if(/^en/i.test(voices[i].lang)) return voices[i];
+  return null;
+}
+function ruVoice(){ for(var i=0;i<voices.length;i++) if(/^ru/i.test(voices[i].lang)) return voices[i]; return null; }
+function canSpeak(){ return !!synth; }
+function speak(text, lang, rate){
+  if(!synth || !text) return;
+  try{
+    synth.cancel();
+    var u = new SpeechSynthesisUtterance(String(text));
+    u.lang = lang || "en-US";
+    u.rate = rate || 0.85;
+    var v = u.lang.indexOf("ru") === 0 ? ruVoice() : enVoice();
+    if(v) u.voice = v;
+    synth.speak(u);
+  }catch(e){}
+}
+function spellOut(word){
+  if(!synth || !word) return;
+  try{
+    synth.cancel();
+    var letters = String(word).replace(/[^A-Za-z']/g, "").toUpperCase().split("");
+    var v = enVoice();
+    letters.forEach(function(ch){
+      var u = new SpeechSynthesisUtterance(ch);
+      u.lang = "en-US"; u.rate = 0.6; if(v) u.voice = v;
+      synth.speak(u);
+    });
+    var f = new SpeechSynthesisUtterance(String(word));
+    f.lang = "en-US"; f.rate = 0.8; if(v) f.voice = v;
+    synth.speak(f);
+  }catch(e){}
+}
+function icoSpeaker(){
+  return h("span", { class:"ico", html:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5Z" fill="currentColor" stroke="none"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 6a8 8 0 0 1 0 12"/></svg>' });
+}
+function speakerBtn(text, lang, cls){
+  if(!canSpeak()) return null;
+  return h("button", { class:"btn speaker " + (cls||""), type:"button", "aria-label":"Послушать", onclick:function(ev){
+    ev.stopPropagation(); speak(text, lang, lang && lang.indexOf("ru")===0 ? 0.95 : 0.8);
+  } }, icoSpeaker());
+}
+
+/* ============== rewards ============== */
+var BADGES = [
+  { id:"own",   nm:"Своё слово",      hint:"Добавь слово сам",           test:function(s){ return s.words.some(function(w){ return !w.sample; }); } },
+  { id:"ten",   nm:"10 слов",          hint:"Собери 10 слов",             test:function(s){ return s.words.length >= 10; } },
+  { id:"writer",nm:"Своё предложение", hint:"Придумай предложение",       test:function(s){ return s.words.some(function(w){ return (w.sentences||[]).length > 0; }); } },
+  { id:"s25",   nm:"25 звёзд",         hint:"Собери 25 звёзд",            test:function(s){ return s.stats.stars >= 25; } },
+  { id:"s100",  nm:"100 звёзд",        hint:"Собери 100 звёзд",           test:function(s){ return s.stats.stars >= 100; } },
+  { id:"perf",  nm:"Тест без ошибок",  hint:"Пройди тест без ошибок",     test:function(s){ return s.stats.perfect >= 1; } },
+  { id:"str3",  nm:"3 дня подряд",     hint:"Занимайся 3 дня подряд",     test:function(s){ return s.stats.streak >= 3; } },
+  { id:"mast5", nm:"5 слов выучено",   hint:"Выучи 5 слов на 5 полосок",  test:function(s){ return s.words.filter(function(w){ return w.level >= 5; }).length >= 5; } }
+];
+function touchDay(){
+  var st = state.stats, t = today();
+  if(st.lastDay !== t){
+    var y = dayKey(Date.now() - 86400000);
+    st.streak = st.lastDay === y ? (st.streak||0) + 1 : 1;
+    st.lastDay = t;
+  }
+}
+function addStars(n){ state.stats.stars = (state.stats.stars||0) + n; touchDay(); }
+function checkBadges(){
+  var earned = state.stats.badges || (state.stats.badges = []);
+  BADGES.forEach(function(b){
+    if(earned.indexOf(b.id) === -1 && b.test(state)){
+      earned.push(b.id);
+      toast("Новая награда: " + b.nm);
+    }
+  });
+}
+function markResult(w, ok){
+  if(!w) return;
+  w.seen = (w.seen||0) + 1;
+  if(ok){ w.right = (w.right||0)+1; w.level = Math.min(5, (w.level||0)+1); }
+  else { w.wrong = (w.wrong||0)+1; w.level = Math.max(0, (w.level||0)-1); }
+  w.lastReview = Date.now();
+}
+function toast(msg){
+  var box = document.getElementById("toast");
+  var t = h("div", { class:"t", text:msg });
+  box.appendChild(t);
+  setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); }, 2200);
+}
+
+/* ============== word picking ============== */
+function pickWords(n, filter){
+  var pool = state.words.filter(filter || function(){ return true; });
+  pool.sort(function(a,b){
+    if(a.level !== b.level) return a.level - b.level;
+    return (a.lastReview||0) - (b.lastReview||0);
+  });
+  var head = pool.slice(0, Math.max(n, Math.ceil(n*2)));
+  var out = shuffle(head).slice(0, n);
+  if(out.length < n){
+    shuffle(pool).forEach(function(w){ if(out.length < n && out.indexOf(w) === -1) out.push(w); });
+  }
+  return out;
+}
+function otherWords(word, n, key){
+  var pool = shuffle(state.words.filter(function(w){ return w.id !== word.id && norm(w[key]) !== norm(word[key]); }));
+  return pool.slice(0, n);
+}
+function levelDots(level){
+  var kids = [];
+  for(var i=0;i<5;i++) kids.push(h("i", { class: i < level ? "on" : "" }));
+  return h("span", { class:"dots", "aria-label":"Выучено на " + level + " из 5" }, kids);
+}
+function needMore(min, what){
+  return h("div", { class:"empty" },
+    h("p", { text:"Чтобы " + what + ", нужно хотя бы " + min + " слов." }),
+    h("button", { class:"btn primary", type:"button", onclick:function(){ go("words"); } }, "Добавить слова")
+  );
+}
+
+/* ============== router ============== */
+var TABS = [
+  { id:"words",  nm:"Слова" },
+  { id:"learn",  nm:"Учить" },
+  { id:"play",   nm:"Игры" },
+  { id:"test",   nm:"Тест" },
+  { id:"awards", nm:"Награды" }
+];
+var tab = "words";
+var view = {};
+var screenEl, tabbarEl;
+
+function go(t){ stopListening(); tab = t; view = {}; render(); if(screenEl) screenEl.scrollTop = 0; }
+
+function render(){
+  document.getElementById("chip-stars").textContent = (state.stats.stars||0) + " ★";
+  var streakChip = document.getElementById("chip-streak");
+  streakChip.textContent = (state.stats.streak||0) + " дн.";
+  streakChip.title = "Дней подряд с занятиями";
+  tabbarEl.textContent = "";
+  TABS.forEach(function(t){
+    tabbarEl.appendChild(h("button", { type:"button", "aria-current": tab === t.id ? "true" : "false",
+      onclick:function(){ go(t.id); } }, t.nm));
+  });
+  var actionEl = document.getElementById("action");
+  actionEl.textContent = "";
+  if(tab === "words" && !view.form){
+    actionEl.appendChild(h("button", { class:"btn primary block", type:"button", onclick:function(){
+      view.form = { en:"", ru:"", editId:null, err:"", added:[], micMsg:"", listening:null }; render();
+      if(screenEl) screenEl.scrollTop = 0;
+      var inp = document.getElementById("f-en"); if(inp) inp.focus();
+    } }, "Добавить слово"));
+  }
+  screenEl.textContent = "";
+  var node = tab === "words" ? screenWords()
+    : tab === "learn" ? screenLearn()
+    : tab === "play" ? screenPlay()
+    : tab === "test" ? screenTest()
+    : screenAwards();
+  screenEl.appendChild(node);
+}
+
+/* ============== screen: Слова ============== */
+function screenWords(){
+  var box = h("div", { class:"stack" });
+  var mine = state.words.filter(function(w){ return !w.sample; }).length;
+  box.appendChild(h("div", null,
+    h("h2", { class:"title", text:"Мои слова" }),
+    h("p", { class:"sub", text: state.words.length + " слов, из них твоих: " + mine })
+  ));
+
+  if(view.form) box.appendChild(view.form.editId ? wordForm() : quickForm());
+
+  if(!state.words.length){
+    box.appendChild(h("div", { class:"empty" },
+      h("p", { text:"Пока пусто. Добавь первое слово из урока!" })));
+    return box;
+  }
+
+  var sorted = state.words.slice().sort(function(a,b){ return (b.addedAt||0) - (a.addedAt||0); });
+  var list = h("div", { class:"wordlist" });
+  sorted.forEach(function(w){ list.appendChild(wordRow(w)); });
+  box.appendChild(list);
+
+  if(state.words.some(function(w){ return w.sample; })){
+    box.appendChild(h("button", { class:"btn ghost", type:"button", onclick:function(){
+      if(!confirm("Убрать слова-примеры? Твои слова останутся.")) return;
+      state.words = state.words.filter(function(w){ return !w.sample; });
+      save(); render(); toast("Примеры убраны");
+    } }, "Убрать слова-примеры"));
+  }
+  return box;
+}
+
+/* --- voice input --- */
+var SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+var recog = null;
+function canListen(){ return !!SR; }
+function stopListening(){ try{ if(recog) recog.abort(); }catch(e){} recog = null; }
+function listen(lang, onResult, onDone){
+  if(!SR) return;
+  stopListening();
+  var r = new SR();
+  r.lang = lang; r.interimResults = false; r.maxAlternatives = 1; r.continuous = false;
+  var got = false;
+  r.onresult = function(ev){
+    try{ var t = ev.results[0][0].transcript; got = true; onResult(String(t).trim()); }catch(e){}
+  };
+  r.onerror = function(ev){
+    var code = ev && ev.error;
+    var msg = code === "not-allowed" || code === "service-not-allowed" ? "Нет доступа к микрофону. Разреши микрофон для этой страницы."
+      : code === "no-speech" ? "Ничего не услышал. Попробуй ещё раз."
+      : code === "audio-capture" ? "Микрофон не найден."
+      : code === "aborted" ? "" : "Не получилось распознать. Попробуй ещё.";
+    onDone(false, msg);
+  };
+  r.onend = function(){ if(recog === r){ recog = null; onDone(got, ""); } };
+  recog = r;
+  try{ r.start(); }catch(e){ recog = null; onDone(false, "Микрофон недоступен в этом браузере."); }
+}
+function cleanSpoken(t, lang){
+  t = String(t||"").replace(/[.!?,;:]+$/g, "").trim();
+  if(lang === "en") t = t.toLowerCase();
+  else t = t.charAt(0).toLowerCase() + t.slice(1);
+  return t;
+}
+function icoMic(){
+  return h("span", { class:"ico", html:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor" stroke="none"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>' });
+}
+function micBtn(f, key){
+  if(!canListen()) return null;
+  var on = f.listening === key;
+  return h("button", { class:"btn mic" + (on ? " on" : ""), type:"button",
+    "aria-label": key === "en" ? "Сказать слово" : "Сказать перевод", onclick:function(){
+      if(on){ stopListening(); f.listening = null; render(); return; }
+      startVoice(f, key);
+    } }, icoMic());
+}
+function startVoice(f, key){
+  f.listening = key; f.micMsg = key === "en" ? "Слушаю… скажи слово по-английски" : "Слушаю… скажи перевод по-русски";
+  render();
+  listen(key === "en" ? "en-US" : "ru-RU", function(text){
+    f[key] = cleanSpoken(text, key);
+  }, function(ok, msg){
+    if(view.form !== f) return;
+    f.listening = null;
+    f.micMsg = msg || "";
+    render();
+    if(ok && key === "en" && !f.ru){ setTimeout(function(){ if(view.form === f && !f.listening) startVoice(f, "ru"); }, 350); }
+  });
+}
+
+/* --- quick add (several in a row) --- */
+function quickForm(){
+  var f = view.form;
+  function upd(key){ return function(ev){ f[key] = ev.target.value; }; }
+  function onEnter(ev){ if(ev.key === "Enter"){ ev.preventDefault(); submitForm(); } }
+  var added = (f.added || []).map(function(id){ return state.words.filter(function(w){ return w.id === id; })[0]; }).filter(Boolean);
+  return h("div", { class:"card stack quick" },
+    h("div", { class:"row" },
+      h("div", { class:"label grow", text:"Новое слово" }),
+      h("button", { class:"btn ghost", type:"button", onclick:function(){ stopListening(); view.form = null; render(); } }, "Готово")
+    ),
+    h("div", { class:"row" },
+      h("input", { type:"text", id:"f-en", class:"grow", value:f.en, placeholder:"a cat", autocapitalize:"off",
+        autocorrect:"off", spellcheck:"false", "aria-label":"Слово по-английски", oninput:upd("en"), onkeydown:onEnter }),
+      micBtn(f, "en")
+    ),
+    h("div", { class:"row" },
+      h("input", { type:"text", id:"f-ru", class:"grow", value:f.ru, placeholder:"кот", "aria-label":"Перевод",
+        oninput:upd("ru"), onkeydown:onEnter }),
+      micBtn(f, "ru")
+    ),
+    f.micMsg ? h("div", { class:"micmsg" + (f.listening ? " live" : ""), text:f.micMsg }) : null,
+    f.err ? h("div", { class:"err", text:f.err }) : null,
+    h("button", { class:"btn primary block", type:"button", onclick:submitForm }, "Добавить"),
+    h("div", { class:"sub", style:"margin:0", text: canListen()
+      ? "Нажми микрофон и скажи слово, потом перевод. Артикль говори вместе со словом: a cat."
+      : "Артикль пиши вместе со словом: a cat, an apple." }),
+    added.length ? h("div", { class:"added" }, h("span", { class:"label", text:"Добавлено сейчас:" }),
+      added.map(function(w){ return h("span", { class:"tag big", text:full(w) }); })) : null
+  );
+}
+
+/* --- edit form --- */
+function wordForm(){
+  var f = view.form;
+  function upd(key){ return function(ev){ f[key] = ev.target.value; }; }
+  return h("div", { class:"card stack" },
+    h("div", { class:"label", text:"Изменить слово" }),
+    h("label", { class:"field" }, "Слово по-английски (с артиклем, если нужен)",
+      h("input", { type:"text", id:"f-en", value:f.en, placeholder:"a cat", autocapitalize:"off",
+        autocorrect:"off", spellcheck:"false", oninput:upd("en") })),
+    h("label", { class:"field" }, "Перевод",
+      h("input", { type:"text", id:"f-ru", value:f.ru, placeholder:"кот, кошка", oninput:upd("ru") })),
+    h("label", { class:"field" }, "Пример по-английски",
+      h("input", { type:"text", id:"f-ex", value:f.ex, placeholder:"The cat sleeps.", autocapitalize:"off",
+        spellcheck:"false", oninput:upd("ex") })),
+    h("label", { class:"field" }, "Перевод примера",
+      h("input", { type:"text", id:"f-exru", value:f.exRu, placeholder:"Кот спит.", oninput:upd("exRu") })),
+    f.err ? h("div", { class:"err", text:f.err }) : null,
+    h("div", { class:"row" },
+      h("button", { class:"btn primary grow", type:"button", onclick:submitForm }, "Сохранить"),
+      h("button", { class:"btn ghost", type:"button", onclick:function(){ view.form = null; render(); } }, "Отмена")
+    )
+  );
+}
+
+function submitForm(){
+  var f = view.form;
+  var sp = splitArticle(f.en), en = sp.en, ru = (f.ru||"").trim(), art = sp.art;
+  f.err = "";
+  if(!en || !ru){ f.err = "Нужно и слово, и перевод."; render(); return; }
+  if(!/[A-Za-z]/.test(en)){ f.err = "Слово нужно английскими буквами."; render(); return; }
+  var dup = state.words.filter(function(w){ return norm(w.en) === norm(en) && w.id !== f.editId; })[0];
+  if(dup){ f.err = "Слово «" + full(dup) + "» уже есть."; render(); return; }
+  if(f.editId){
+    var w = state.words.filter(function(x){ return x.id === f.editId; })[0];
+    if(w){ w.en = en; w.art = art; w.ru = ru; w.ex = (f.ex||"").trim(); w.exRu = (f.exRu||"").trim(); w.sample = false; }
+    toast("Слово изменено");
+    view.form = null;
+  }else{
+    var nw = makeWord(en, ru, "", "", false, art);
+    state.words.push(nw);
+    addStars(1);
+    speak(full(nw), "en-US", 0.8);
+    toast("Добавлено: " + full(nw));
+    f.added = (f.added || []).concat([nw.id]);
+    f.en = ""; f.ru = ""; f.micMsg = "";
+  }
+  checkBadges(); save(); render();
+}
+
+function wordRow(w){
+  var open = view.openId === w.id;
+  var head = h("div", { class:"word-head" },
+    speakerBtn(full(w), "en-US"),
+    h("button", { class:"word-main", type:"button", "aria-expanded": open ? "true" : "false", onclick:function(){
+      view.openId = open ? null : w.id; render();
+    } },
+      h("div", { class:"word-en" }, full(w), w.sample ? h("span", { class:"tag", text:"пример" }) : null),
+      h("div", { class:"word-ru", text:w.ru }),
+      levelDots(w.level||0)
+    ),
+    h("span", { text: open ? "▾" : "▸", style:"color:var(--ink2);font-weight:800" })
+  );
+  var row = h("div", { class:"word" + (w.level >= 5 ? " mastered" : "") }, head);
+  if(!open) return row;
+
+  var body = h("div", { class:"word-body" });
+  if(w.ex){
+    body.appendChild(h("div", { class:"row" },
+      h("div", { class:"example grow" }, w.ex, w.exRu ? h("span", { class:"ru", text:w.exRu }) : null),
+      speakerBtn(w.ex, "en-US")
+    ));
+  }
+  var acts = h("div", { class:"row wrap" });
+  if(canSpeak()){
+    acts.appendChild(h("button", { class:"btn ghost", type:"button", onclick:function(){ spellOut(w.en); } }, "По буквам"));
+  }
+  acts.appendChild(h("button", { class:"btn ghost", type:"button", onclick:function(){
+    view.form = { en:full(w), ru:w.ru, ex:w.ex, exRu:w.exRu, editId:w.id, err:"" };
+    view.openId = null; render(); if(screenEl) screenEl.scrollTop = 0;
+  } }, "Изменить"));
+  acts.appendChild(h("button", { class:"btn ghost", type:"button", onclick:function(){
+    if(!confirm("Удалить слово «" + w.en + "»?")) return;
+    state.words = state.words.filter(function(x){ return x.id !== w.id; });
+    view.openId = null; save(); render(); toast("Слово удалено");
+  } }, "Удалить"));
+  body.appendChild(acts);
+
+  body.appendChild(h("div", { class:"label", text:"Мои предложения с этим словом" }));
+  if((w.sentences||[]).length){
+    var ul = h("ul", { class:"mine" });
+    w.sentences.forEach(function(s, i){
+      ul.appendChild(h("li", null,
+        h("span", { text:s }),
+        speakerBtn(s, "en-US"),
+        h("button", { class:"btn ghost small", type:"button", "aria-label":"Удалить предложение", onclick:function(){
+          w.sentences.splice(i,1); save(); render();
+        } }, "✕")
+      ));
+    });
+    body.appendChild(ul);
+  }
+  var ta = h("textarea", { id:"s-" + w.id, placeholder:"Например: I have a grey cat.", autocapitalize:"sentences", spellcheck:"false" });
+  body.appendChild(ta);
+  body.appendChild(h("button", { class:"btn good", type:"button", onclick:function(){
+    var txt = ta.value.trim();
+    if(txt.length < 4){ toast("Напиши предложение подлиннее"); return; }
+    if(norm(txt).indexOf(norm(w.en)) === -1){ toast("В предложении должно быть слово «" + w.en + "»"); return; }
+    w.sentences = (w.sentences||[]).concat([txt]);
+    addStars(2); checkBadges(); save(); render();
+    toast("Предложение сохранено. +2 звезды");
+    speak(txt, "en-US", 0.8);
+  } }, "Сохранить предложение"));
+  row.appendChild(body);
+  return row;
+}
+
+/* ============== screen: Учить (карточки) ============== */
+function screenLearn(){
+  if(state.words.length < 1) return needMore(1, "учить карточки");
+  if(!view.deck){
+    view.deck = pickWords(Math.min(10, state.words.length)).map(function(w){ return w.id; });
+    view.i = 0; view.flipped = false; view.done = 0;
+  }
+  var box = h("div", { class:"stack" });
+  if(view.i >= view.deck.length){
+    box.appendChild(h("div", { class:"empty" },
+      h("h2", { class:"title", text:"Круг пройден!" }),
+      h("p", { text:"Ты посмотрел " + view.deck.length + " карточек." })
+    ));
+    box.appendChild(h("button", { class:"btn primary block", type:"button", onclick:function(){
+      view.deck = null; render();
+    } }, "Ещё раз"));
+    box.appendChild(h("button", { class:"btn ghost block", type:"button", onclick:function(){ go("test"); } }, "Проверить себя тестом"));
+    return box;
+  }
+  var w = state.words.filter(function(x){ return x.id === view.deck[view.i]; })[0];
+  if(!w){ view.i++; return screenLearn(); }
+
+  box.appendChild(h("div", null,
+    h("h2", { class:"title", text:"Карточки" }),
+    h("p", { class:"sub", text:"Карточка " + (view.i+1) + " из " + view.deck.length + " — сначала вспомни сам!" })
+  ));
+  box.appendChild(h("div", { class:"progressbar" }, h("i", { style:"width:" + Math.round(view.i/view.deck.length*100) + "%" })));
+
+  var card;
+  if(!view.flipped){
+    card = h("div", { class:"flash" },
+      h("div", { class:"big", text:full(w) }),
+      h("div", { class:"row" },
+        canSpeak() ? h("button", { class:"btn warn", type:"button", onclick:function(){ speak(full(w), "en-US", 0.8); } }, "Послушать") : null,
+        canSpeak() ? h("button", { class:"btn ghost", type:"button", onclick:function(){ spellOut(w.en); } }, "По буквам") : null
+      ),
+      h("button", { class:"btn primary block", type:"button", onclick:function(){ view.flipped = true; render(); } }, "Показать перевод")
+    );
+  }else{
+    card = h("div", { class:"flash" },
+      h("div", { class:"big", text:full(w) }),
+      h("div", { class:"mid", text:w.ru }),
+      w.ex ? h("div", { class:"example" }, w.ex, w.exRu ? h("span", { class:"ru", text:w.exRu }) : null) : null,
+      levelDots(w.level||0)
+    );
+  }
+  box.appendChild(card);
+
+  if(view.flipped){
+    box.appendChild(h("div", { class:"row" },
+      h("button", { class:"btn bad grow", type:"button", onclick:function(){
+        markResult(w, false); save(); view.flipped = false; view.i++; render();
+      } }, "Ещё учу"),
+      h("button", { class:"btn good grow", type:"button", onclick:function(){
+        markResult(w, true); addStars(1); checkBadges(); save();
+        view.flipped = false; view.i++; render();
+      } }, "Знаю")
+    ));
+  }
+  return box;
+}
+
+/* ============== screen: Игры ============== */
+var GAMES = [
+  { id:"spell", nm:"Собери слово",       sub:"Слушай и составь слово из букв" },
+  { id:"sent",  nm:"Составь предложение", sub:"Поставь слова в правильный порядок" },
+  { id:"match", nm:"Найди пару",          sub:"Слово и перевод — найди пары" }
+];
+function screenPlay(){
+  if(!view.game){
+    var box = h("div", { class:"stack" });
+    box.appendChild(h("div", null,
+      h("h2", { class:"title", text:"Игры" }),
+      h("p", { class:"sub", text:"Выбери игру — за каждый правильный ответ — звезда" })
+    ));
+    GAMES.forEach(function(g){
+      box.appendChild(h("button", { class:"btn block", type:"button", style:"justify-content:flex-start;text-align:left;padding:16px",
+        onclick:function(){ view.game = g.id; view.g = null; render(); } },
+        h("span", null, h("div", { text:g.nm }), h("div", { style:"font-weight:600;font-size:13px;color:var(--ink2)", text:g.sub }))
+      ));
+    });
+    return box;
+  }
+  var wrap = h("div", { class:"stack" });
+  wrap.appendChild(h("button", { class:"btn ghost", type:"button", style:"align-self:flex-start",
+    onclick:function(){ view.game = null; view.g = null; render(); } }, "← Другие игры"));
+  wrap.appendChild(view.game === "spell" ? gameSpell() : view.game === "sent" ? gameSentence() : gameMatch());
+  return wrap;
+}
+
+/* --- игра: собери слово --- */
+function gameSpell(){
+  if(state.words.length < 1) return needMore(1, "играть");
+  if(!view.g){
+    var w = pickWords(1)[0];
+    var letters = w.en.replace(/\s+/g, "").split("");
+    view.g = { id:w.id, letters:letters,
+      tiles: shuffle(letters.map(function(ch, i){ return { ch:ch, key:i, used:false }; })),
+      placed: [], status:null };
+  }
+  var g = view.g;
+  var w2 = state.words.filter(function(x){ return x.id === g.id; })[0];
+  if(!w2){ view.g = null; return gameSpell(); }
+
+  var box = h("div", { class:"stack" });
+  box.appendChild(h("div", null,
+    h("h2", { class:"title", text:"Собери слово" }),
+    h("p", { class:"sub", text:"Как пишется это слово?" })
+  ));
+  box.appendChild(h("div", { class:"card stack" },
+    h("div", { class:"row" },
+      h("div", { class:"grow", style:"font-size:20px;font-weight:800", text:w2.ru }),
+      speakerBtn(full(w2), "en-US")
+    ),
+    canSpeak() ? h("button", { class:"btn ghost", type:"button", onclick:function(){ spellOut(w2.en); } }, "Подсказка: по буквам") : null
+  ));
+
+  var slots = h("div", { class:"slots" });
+  if(w2.art) slots.appendChild(h("div", { class:"slot art", text:w2.art }));
+  for(var i=0;i<g.letters.length;i++){
+    var t = g.placed[i];
+    var cls = "slot" + (t ? " filled" : "") + (g.status === "ok" ? " ok" : g.status === "no" && t ? " no" : "");
+    slots.appendChild(h("div", { class:cls, text: t ? t.ch : "" }));
+  }
+  box.appendChild(slots);
+
+  var tiles = h("div", { class:"tiles" + (g.status === "no" ? " shake" : "") });
+  g.tiles.forEach(function(t){
+    tiles.appendChild(h("button", { class:"btn tile" + (t.used ? " used" : ""), type:"button", text:t.ch, onclick:function(){
+      if(g.status || t.used) return;
+      t.used = true; g.placed.push(t);
+      if(g.placed.length === g.letters.length){
+        var guess = g.placed.map(function(x){ return x.ch; }).join("");
+        var ok = norm(guess) === norm(w2.en.replace(/\s+/g, ""));
+        g.status = ok ? "ok" : "no";
+        markResult(w2, ok);
+        if(ok){ addStars(2); checkBadges(); toast("Верно. +2 звезды"); speak(full(w2), "en-US", 0.8); }
+        else { toast("Правильно: " + full(w2)); speak(full(w2), "en-US", 0.7); }
+        save();
+      }
+      render();
+    } }));
+  });
+  box.appendChild(tiles);
+
+  if(!g.status){
+    box.appendChild(h("button", { class:"btn ghost", type:"button", onclick:function(){
+      var t = g.placed.pop(); if(t) t.used = false; render();
+    } }, "Стереть букву"));
+  }else{
+    box.appendChild(h("div", { class:"verdict " + (g.status === "ok" ? "ok" : "no"),
+      text: g.status === "ok" ? "Верно: " + full(w2) : "Правильно так: " + full(w2) }));
+    box.appendChild(h("button", { class:"btn primary block", type:"button", onclick:function(){ view.g = null; render(); } }, "Следующее слово →"));
+  }
+  return box;
+}
+
+/* --- игра: составь предложение --- */
+function gameSentence(){
+  var pool = state.words.filter(function(w){ return w.ex && w.ex.trim().split(/\s+/).length >= 3; });
+  if(!pool.length){
+    return h("div", { class:"empty" },
+      h("p", { text:"Для этой игры нужны слова с примером предложения. Добавь пример к любому слову." }),
+      h("button", { class:"btn primary", type:"button", onclick:function(){ go("words"); } }, "Открыть слова"));
+  }
+  if(!view.g){
+    var w = shuffle(pool.sort(function(a,b){ return (a.lastReview||0) - (b.lastReview||0); }).slice(0, Math.max(3, Math.ceil(pool.length/2))))[0];
+    var toks = w.ex.trim().split(/\s+/);
+    view.g = { id:w.id, toks:toks, pool: shuffle(toks.map(function(t, i){ return { t:t, key:i, used:false }; })),
+      picked:[], status:null };
+  }
+  var g = view.g;
+  var w2 = state.words.filter(function(x){ return x.id === g.id; })[0];
+  if(!w2){ view.g = null; return gameSentence(); }
+
+  var box = h("div", { class:"stack" });
+  box.appendChild(h("div", null,
+    h("h2", { class:"title", text:"Составь предложение" }),
+    h("p", { class:"sub", text:"Нажимай слова по порядку. Слово урока: " + w2.en })
+  ));
+  if(w2.exRu) box.appendChild(h("div", { class:"hint", text:"По-русски: " + w2.exRu }));
+
+  var sent = h("div", { class:"sentbox" + (g.status === "no" ? " shake" : "") });
+  if(!g.picked.length) sent.appendChild(h("span", { style:"color:var(--ink2)", text:"Здесь появится предложение…" }));
+  g.picked.forEach(function(p){
+    sent.appendChild(h("button", { class:"btn small", type:"button", text:p.t, onclick:function(){
+      if(g.status) return;
+      p.used = false;
+      g.picked = g.picked.filter(function(x){ return x !== p; });
+      render();
+    } }));
+  });
+  box.appendChild(sent);
+
+  var chips = h("div", { class:"chips" });
+  g.pool.forEach(function(p){
+    if(p.used) return;
+    chips.appendChild(h("button", { class:"btn", type:"button", text:p.t, onclick:function(){
+      if(g.status) return;
+      p.used = true; g.picked.push(p);
+      if(g.picked.length === g.toks.length){
+        var guess = g.picked.map(function(x){ return x.t; }).join(" ");
+        var ok = norm(guess) === norm(g.toks.join(" "));
+        g.status = ok ? "ok" : "no";
+        markResult(w2, ok);
+        if(ok){ addStars(3); checkBadges(); toast("Верно. +3 звезды"); }
+        save();
+        speak(w2.ex, "en-US", 0.8);
+      }
+      render();
+    } }));
+  });
+  box.appendChild(chips);
+
+  if(g.status){
+    box.appendChild(h("div", { class:"verdict " + (g.status === "ok" ? "ok" : "no"),
+      text: g.status === "ok" ? "Верно" : "А правильно так:" }));
+    if(g.status === "no") box.appendChild(h("div", { class:"example", text:w2.ex }));
+    box.appendChild(h("button", { class:"btn primary block", type:"button", onclick:function(){ view.g = null; render(); } }, "Ещё предложение →"));
+  }
+  return box;
+}
+
+/* --- игра: найди пару --- */
+function gameMatch(){
+  if(state.words.length < 4) return needMore(4, "играть в пары");
+  if(!view.g){
+    var ws = pickWords(4);
+    var cards = [];
+    ws.forEach(function(w){
+      cards.push({ key:w.id + "-en", wordId:w.id, text:full(w), kind:"en", open:false, done:false });
+      cards.push({ key:w.id + "-ru", wordId:w.id, text:w.ru, kind:"ru", open:false, done:false });
+    });
+    view.g = { cards: shuffle(cards), first:null, lock:false, found:0, tries:0 };
+  }
+  var g = view.g;
+  var box = h("div", { class:"stack" });
+  box.appendChild(h("div", null,
+    h("h2", { class:"title", text:"Найди пару" }),
+    h("p", { class:"sub", text:"Найдено пар: " + g.found + " из 4" })
+  ));
+  var grid = h("div", { class:"pairs" });
+  g.cards.forEach(function(c){
+    grid.appendChild(h("button", { class:"btn pair" + (c.done ? " done" : c.open ? " open" : ""), type:"button",
+      text:c.text, onclick:function(){
+        if(g.lock || c.done || c === g.first) return;
+        c.open = true;
+        if(!g.first){ g.first = c; if(c.kind === "en") speak(c.text, "en-US", 0.8); render(); return; }
+        g.tries++;
+        var a = g.first, b = c;
+        var w = state.words.filter(function(x){ return x.id === a.wordId; })[0];
+        if(a.wordId === b.wordId && a.kind !== b.kind){
+          a.done = b.done = true; g.first = null; g.found++;
+          markResult(w, true); addStars(1); checkBadges(); save();
+          if(w) speak(full(w), "en-US", 0.8);
+          if(g.found === 4){ toast("Все пары найдены"); }
+          render();
+        }else{
+          g.lock = true; render();
+          setTimeout(function(){ a.open = false; b.open = false; g.first = null; g.lock = false; render(); }, 900);
+        }
+      } }));
+  });
+  box.appendChild(grid);
+  if(g.found === 4){
+    box.appendChild(h("div", { class:"verdict ok", text:"Готово! Попыток: " + g.tries }));
+    box.appendChild(h("button", { class:"btn primary block", type:"button", onclick:function(){ view.g = null; render(); } }, "Новые пары →"));
+  }
+  return box;
+}
+
+/* ============== screen: Тест ============== */
+function buildQuiz(){
+  var n = Math.min(10, state.words.length);
+  var ws = pickWords(n);
+  var types = ["enru", "ruen", "type"];
+  if(canSpeak()) types.push("audio");
+  var qs = [];
+  ws.forEach(function(w, idx){
+    var type = types[(idx + Math.floor(Math.random()*types.length)) % types.length];
+    var q = { wordId:w.id, type:type };
+    if(type === "enru"){
+      q.answer = w.ru;
+      q.options = shuffle([w.ru].concat(otherWords(w, 3, "ru").map(function(x){ return x.ru; })));
+    }else if(type === "ruen" || type === "audio"){
+      q.answer = full(w);
+      q.options = shuffle([full(w)].concat(otherWords(w, 3, "en").map(function(x){ return full(x); })));
+    }else{
+      q.answer = full(w);
+    }
+    if(q.options && q.options.length < 2) q.type = "type";
+    qs.push(q);
+  });
+  return { qs:qs, i:0, correct:0, wrong:[], chosen:null, ok:null, finished:false };
+}
+
+function screenTest(){
+  if(state.words.length < 4) return needMore(4, "пройти тест");
+  if(!view.quiz){
+    var box = h("div", { class:"stack" });
+    box.appendChild(h("div", null,
+      h("h2", { class:"title", text:"Тест" }),
+      h("p", { class:"sub", text:"Вопросы по новым и по старым словам. Слова, которые ты знаешь хуже, попадаются чаще." })
+    ));
+    box.appendChild(h("div", { class:"card stack" },
+      h("div", { class:"row" },
+        h("div", { class:"grow" },
+          h("div", { style:"font-weight:800", text:"Вопросов: " + Math.min(10, state.words.length) }),
+          h("div", { style:"font-size:13px;color:var(--ink2)", text:"Перевод, слово на слух и письмо" }))),
+      h("button", { class:"btn primary block", type:"button", onclick:function(){ view.quiz = buildQuiz(); render(); } }, "Начать тест")
+    ));
+    if(state.stats.tests) box.appendChild(h("p", { class:"sub", text:"Пройдено тестов: " + state.stats.tests + ", без ошибок: " + (state.stats.perfect||0) }));
+    return box;
+  }
+  var q = view.quiz;
+  if(q.finished) return testResult(q);
+
+  var cur = q.qs[q.i];
+  var w = state.words.filter(function(x){ return x.id === cur.wordId; })[0];
+  if(!w){ q.i++; if(q.i >= q.qs.length) q.finished = true; return screenTest(); }
+
+  var box = h("div", { class:"stack" });
+  box.appendChild(h("p", { class:"sub", text:"Вопрос " + (q.i+1) + " из " + q.qs.length + " · правильных: " + q.correct }));
+  box.appendChild(h("div", { class:"progressbar" }, h("i", { style:"width:" + Math.round(q.i/q.qs.length*100) + "%" })));
+
+  var card = h("div", { class:"qcard" });
+  if(cur.type === "enru"){
+    card.appendChild(h("div", { class:"label", text:"Что значит это слово?" }));
+    card.appendChild(h("div", { class:"qword", text:full(w) }));
+    var sb = speakerBtn(full(w), "en-US"); if(sb) card.appendChild(sb);
+  }else if(cur.type === "ruen"){
+    card.appendChild(h("div", { class:"label", text:"Как это по-английски?" }));
+    card.appendChild(h("div", { class:"qword", text:w.ru }));
+  }else if(cur.type === "audio"){
+    card.appendChild(h("div", { class:"label", text:"Послушай и выбери слово" }));
+    card.appendChild(h("button", { class:"btn primary", type:"button", style:"padding:14px 26px",
+      onclick:function(){ speak(full(w), "en-US", 0.75); } }, "Послушать"));
+  }else{
+    card.appendChild(h("div", { class:"label", text: w.art ? "Напиши это слово по-английски (лучше с артиклем " + w.art + ")" : "Напиши это слово по-английски" }));
+    card.appendChild(h("div", { class:"qword", text:w.ru }));
+    if(canSpeak()) card.appendChild(h("button", { class:"btn ghost", type:"button", onclick:function(){ speak(full(w), "en-US", 0.75); } }, "Послушать подсказку"));
+  }
+
+  if(cur.type === "type"){
+    var inp = h("input", { type:"text", id:"q-type", placeholder:"пиши здесь", autocapitalize:"off",
+      autocorrect:"off", spellcheck:"false", value: q.chosen === null ? "" : q.chosen });
+    if(q.ok === null){
+      card.appendChild(inp);
+      card.appendChild(h("button", { class:"btn primary block", type:"button", onclick:function(){
+        answerQuiz(inp.value, w, cur);
+      } }, "Проверить"));
+    }else{
+      card.appendChild(h("div", { class:"qword", style:"font-size:24px", text: q.chosen || "…" }));
+    }
+  }else{
+    var opts = h("div", { class:"options" });
+    cur.options.forEach(function(opt){
+      var cls = "btn";
+      if(q.ok !== null){
+        if(norm(opt) === norm(cur.answer)) cls += " right";
+        else if(opt === q.chosen) cls += " wrong";
+      }
+      opts.appendChild(h("button", { class:cls, type:"button", text:opt, onclick:function(){
+        if(q.ok !== null) return;
+        answerQuiz(opt, w, cur);
+      } }));
+    });
+    card.appendChild(opts);
+  }
+
+  if(q.ok !== null){
+    card.appendChild(h("div", { class:"verdict " + (q.ok ? "ok" : "no"),
+      text: q.ok ? "Правильно" : "Правильный ответ: " + cur.answer }));
+    if(!q.ok && cur.type !== "enru") card.appendChild(h("div", { class:"example", text:full(w) + " — " + w.ru }));
+    card.appendChild(h("button", { class:"btn primary block", type:"button", onclick:function(){
+      q.i++; q.chosen = null; q.ok = null;
+      if(q.i >= q.qs.length){
+        q.finished = true;
+        state.stats.tests = (state.stats.tests||0) + 1;
+        if(q.correct === q.qs.length){ state.stats.perfect = (state.stats.perfect||0) + 1; addStars(5); }
+        checkBadges(); save();
+      }
+      render();
+    } }, q.i + 1 >= q.qs.length ? "Показать результат" : "Дальше →"));
+  }
+  box.appendChild(card);
+  return box;
+}
+
+function answerQuiz(value, w, cur){
+  var q = view.quiz;
+  q.chosen = value;
+  q.ok = norm(value) === norm(cur.answer) || (cur.type === "type" && norm(value) === norm(w.en));
+  markResult(w, q.ok);
+  if(q.ok){ q.correct++; addStars(1); }
+  else q.wrong.push(w.id);
+  save();
+  render();
+  if(q.ok) speak(full(w), "en-US", 0.8);
+}
+
+function testResult(q){
+  var box = h("div", { class:"stack" });
+  var perfect = q.correct === q.qs.length;
+  box.appendChild(h("div", { class:"card stack", style:"text-align:center;align-items:center" },
+    h("h2", { class:"title", text: perfect ? "Ни одной ошибки!" : "Тест пройден" }),
+    h("div", { class:"bignum", text: q.correct + " / " + q.qs.length }),
+    h("p", { class:"sub", text: perfect ? "За идеальный тест +5 звёзд!" : "За каждый правильный ответ — звезда." })
+  ));
+  if(q.wrong.length){
+    box.appendChild(h("div", { class:"label", text:"Стоит повторить" }));
+    var list = h("div", { class:"wordlist" });
+    q.wrong.forEach(function(id){
+      var w = state.words.filter(function(x){ return x.id === id; })[0];
+      if(!w) return;
+      list.appendChild(h("div", { class:"word" }, h("div", { class:"word-head" },
+        speakerBtn(full(w), "en-US"),
+        h("div", { class:"grow" }, h("div", { class:"word-en", text:full(w) }), h("div", { class:"word-ru", text:w.ru })))));
+    });
+    box.appendChild(list);
+  }
+  box.appendChild(h("button", { class:"btn primary block", type:"button", onclick:function(){ view.quiz = null; render(); } }, "Ещё тест"));
+  box.appendChild(h("button", { class:"btn ghost block", type:"button", onclick:function(){ go("learn"); } }, "Повторить карточки"));
+  return box;
+}
+
+/* ============== screen: Награды ============== */
+function screenAwards(){
+  var box = h("div", { class:"stack" });
+  var learned = state.words.filter(function(w){ return w.level >= 5; }).length;
+  box.appendChild(h("div", null,
+    h("h2", { class:"title", text:"Мои награды" }),
+    h("p", { class:"sub", text:"Собирай звёзды, занимайся каждый день и открывай медали." })
+  ));
+  box.appendChild(h("div", { class:"statrow" },
+    h("div", { class:"card", style:"text-align:center" },
+      h("div", { class:"bignum", text:String(state.stats.stars||0) }), h("div", { class:"label", text:"звёзд" })),
+    h("div", { class:"card", style:"text-align:center" },
+      h("div", { class:"bignum", text:String(state.stats.streak||0) }), h("div", { class:"label", text:"дней подряд" }))
+  ));
+  box.appendChild(h("div", { class:"statrow" },
+    h("div", { class:"card", style:"text-align:center" },
+      h("div", { class:"bignum", text:String(state.words.length) }), h("div", { class:"label", text:"слов в копилке" })),
+    h("div", { class:"card", style:"text-align:center" },
+      h("div", { class:"bignum", text:String(learned) }), h("div", { class:"label", text:"выучено" }))
+  ));
+
+  box.appendChild(h("div", { class:"label", text:"Медали" }));
+  var grid = h("div", { class:"badges" });
+  var earned = state.stats.badges || [];
+  BADGES.forEach(function(b){
+    var got = earned.indexOf(b.id) !== -1 || b.test(state);
+    grid.appendChild(h("div", { class:"badge" + (got ? " earned" : ""), title: got ? b.nm : b.hint },
+      h("span", { class:"mark" }), h("div", { class:"nm", text: got ? b.nm : b.hint })));
+  });
+  box.appendChild(grid);
+
+  if(state.words.length){
+    box.appendChild(h("div", { class:"label", text:"Как я знаю слова" }));
+    var m = h("div", { class:"mastery" });
+    state.words.slice().sort(function(a,b){ return (b.level||0) - (a.level||0); }).forEach(function(w){
+      m.appendChild(h("div", { class:"m" },
+        h("b", { text:full(w) }),
+        h("div", { class:"progressbar" }, h("i", { style:"width:" + ((w.level||0)/5*100) + "%" })),
+        h("span", { style:"font-size:13px;color:var(--ink2);min-width:30px;text-align:right", text:(w.level||0) + "/5" })
+      ));
+    });
+    box.appendChild(m);
+  }
+  return box;
+}
+
+/* ============== boot ============== */
+function start(hot){
+  screenEl = document.getElementById("screen");
+  tabbarEl = document.getElementById("tabbar");
+  loadLocal();
+  if(hot && hot.tab) tab = hot.tab;
+  setSync("wait");
+  render();
+  initDb();
+  if(window.claude && window.claude.hot && window.claude.hot.snapshot){
+    try{ window.claude.hot.snapshot(function(){ return { tab:tab }; }); }catch(e){}
+  }
+}
+if(window.claude && window.claude.hot && window.claude.hot.ready){
+  window.claude.hot.ready(start);
+}else{
+  start((window.claude && window.claude.hot && window.claude.hot.data) || {});
+}
+})();
+</script>
+</body>
+</html>
