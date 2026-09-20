@@ -140,11 +140,9 @@ input::placeholder,textarea::placeholder{color:var(--ink2);opacity:.65;font-weig
 .slot.art{width:auto;padding:0 10px;color:var(--ink2);font-family:'Nunito',sans-serif;font-size:18px;background:transparent}
 
 /* ---- welcome ---- */
-.welcome .hero{padding:40px 0 8px;text-align:center}
+.welcome .hero{padding:16px 0 4px;text-align:center}
 .apptitle{font-size:36px;font-weight:800;letter-spacing:-.03em;margin:0 0 4px;line-height:1.05}
 .person{justify-content:flex-start;padding:10px 12px;min-height:68px;font-size:18px}
-.avatar{flex:0 0 auto;width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--on-accent);
-  display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:19px}
 
 /* ---- flashcard / progress ---- */
 .flash{background:var(--surface);border-radius:22px;padding:30px 18px;text-align:center;
@@ -157,8 +155,7 @@ input::placeholder,textarea::placeholder{color:var(--ink2);opacity:.65;font-weig
 .progressbar i{display:block;height:100%;background:var(--good);border-radius:4px;transition:width .25s ease}
 
 /* ---- games ---- */
-.btn.gtile{justify-content:flex-start;padding:14px 16px;min-height:76px;font-size:19px;gap:14px}
-.tile-ic{width:48px;height:48px;border-radius:14px;background:var(--accent-soft);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+.btn.gtile{justify-content:flex-start;padding:10px 16px 10px 12px;min-height:84px;font-size:19px;gap:14px}
 .slots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;min-height:54px}
 .slot{width:42px;height:52px;border-radius:12px;background:var(--surface);
   display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:24px;font-weight:700}
@@ -216,6 +213,33 @@ input::placeholder,textarea::placeholder{color:var(--ink2);opacity:.65;font-weig
 .tabbar button .ico{width:44px;height:30px;border-radius:12px;transition:background-color .12s ease}
 .tabbar button[aria-current="true"]{color:var(--accent)}
 .tabbar button[aria-current="true"] .ico{background:var(--accent-soft)}
+
+/* ---- illustrations & motion ---- */
+.illo{display:block;max-width:100%;height:auto;margin:0 auto;user-select:none;-webkit-user-drag:none}
+.illo.tile-img{margin:0;flex:0 0 auto}
+.avatar-img{border-radius:50%;flex:0 0 auto;display:block}
+.avatars{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.avpick{appearance:none;border:0;background:transparent;padding:4px;border-radius:16px;cursor:pointer;opacity:.55;transition:opacity .15s ease,transform .15s ease}
+.avpick img{display:block;width:100%;height:auto}
+.avpick.on{opacity:1;background:var(--accent-soft);transform:scale(1.08)}
+.enter{animation:enter .28s cubic-bezier(.2,.8,.2,1) both}
+@keyframes enter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.pop{animation:pop .5s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes pop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+.float{animation:pop .6s cubic-bezier(.34,1.56,.64,1) both, floaty 3.4s ease-in-out .6s infinite}
+@keyframes floaty{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
+.wiggle{animation:pop .5s cubic-bezier(.34,1.56,.64,1) both, wiggle .7s ease-in-out .5s 2}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+.listen{animation:listen 1.2s ease-in-out infinite}
+@keyframes listen{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.word.new{animation:newword 1.4s ease-out both}
+@keyframes newword{0%{background:var(--good-soft);transform:scale(.97)}30%{transform:scale(1)}100%{background:var(--surface)}}
+.tabbar button[aria-current="true"] .ico{animation:tabpop .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes tabpop{from{transform:scale(.8)}to{transform:scale(1)}}
+@property --frac{syntax:"<number>";inherits:false;initial-value:0}
+.ring circle.p{stroke-dasharray:var(--frac) 1;animation:ringin .9s cubic-bezier(.2,.8,.2,1) both}
+@keyframes ringin{from{--frac:0}}
+.progressbar i{transition:width .35s ease}
 
 /* ---- toast ---- */
 #toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:50;display:flex;flex-direction:column;
@@ -361,9 +385,9 @@ function leaveProfile(){
   tab = "welcome"; view = {};
   render();
 }
-function createProfile(name, secret, done){
+function createProfile(name, secret, avatar, done){
   profileKey(name, secret).then(function(key){
-    var p = { id: uid(), name: name.trim(), key: key, createdAt: Date.now() };
+    var p = { id: uid(), name: name.trim(), key: key, avatar: avatar | 0, createdAt: Date.now() };
     profiles.push(p); saveProfiles();
     // старые слова без профиля (до появления учеников) переходят к первому созданному ученику
     try{
@@ -532,10 +556,22 @@ function ico(name, size){
 }
 function ring(value, max, size, stroke){
   size = size || 34; stroke = stroke || 4;
-  var r = (size - stroke) / 2, c = 2 * Math.PI * r, frac = Math.max(0, Math.min(1, max ? value / max : 0));
+  var r = (size - stroke) / 2, frac = Math.max(0, Math.min(1, max ? value / max : 0));
   return h("span", { class:"ring", html:'<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '" aria-hidden="true">'
     + '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="var(--line)" stroke-width="' + stroke + '"/>'
-    + (frac > 0 ? '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="var(--good)" stroke-width="' + stroke + '" stroke-linecap="round" stroke-dasharray="' + (c*frac) + ' ' + c + '" transform="rotate(-90 ' + size/2 + ' ' + size/2 + ')"/>' : '') + '</svg>' });
+    + (frac > 0 ? '<circle class="p" pathLength="1" style="--frac:' + frac + '" cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="var(--good)" stroke-width="' + stroke + '" stroke-linecap="round" transform="rotate(-90 ' + size/2 + ' ' + size/2 + ')"/>' : '') + '</svg>' });
+}
+function illo(name, size, cls){
+  return h("img", { class:"illo " + (cls || ""), src:"img/" + name + ".webp", width:size, height:size, alt:"", draggable:"false" });
+}
+var AVATARS = 6;
+function avatarOf(p){
+  var n = p && p.avatar | 0;
+  if(n < 1 || n > AVATARS){ var c = (p && p.name ? p.name.charCodeAt(0) : 0); n = (c % AVATARS) + 1; }
+  return n;
+}
+function avatarImg(p, size){
+  return h("img", { class:"avatar-img", src:"img/avatar-" + avatarOf(p) + ".webp", width:size, height:size, alt:"", draggable:"false" });
 }
 function icoSpeaker(){
   return ico("speaker", 22);
@@ -621,7 +657,7 @@ function levelDots(level){
 }
 function needMore(min, what){
   return h("div", { class:"empty stack" },
-    ico("book", 44),
+    illo("need-words", 170, "pop"),
     h("p", { text:"Нужно хотя бы " + min + " " + plural(min, "слово", "слова", "слов") }),
     h("button", { class:"btn primary", type:"button", onclick:function(){ go("words"); } }, ico("plus"), "Добавить слова")
   );
@@ -658,7 +694,7 @@ function render(){
   }
   topbar.hidden = false;
   tabbarEl.hidden = false;
-  who.hidden = false; who.textContent = ""; who.appendChild(ico("user", 16)); who.appendChild(document.createTextNode(profile.name)); who.title = "Сменить ученика";
+  who.hidden = false; who.textContent = ""; who.appendChild(avatarImg(profile, 24)); who.appendChild(document.createTextNode(profile.name)); who.title = "Сменить ученика";
   document.getElementById("chip-stars").textContent = (state.stats.stars||0) + " ★";
   var streakChip = document.getElementById("chip-streak");
   streakChip.textContent = (state.stats.streak||0) + " дн.";
@@ -682,14 +718,16 @@ function render(){
     : tab === "play" ? screenPlay()
     : tab === "test" ? screenTest()
     : screenAwards();
+  node.classList.add("enter");
   screenEl.appendChild(node);
 }
 
 /* ============== screen: приветствие / ученики ============== */
 function screenWelcome(){
-  var w = view.welcome || (view.welcome = { creating: profiles.length === 0, name:"", secret:"", err:"", busy:false });
+  var w = view.welcome || (view.welcome = { creating: profiles.length === 0, name:"", secret:"", err:"", busy:false, avatar: 1 + Math.floor(Math.random() * AVATARS) });
   var box = h("div", { class:"stack welcome" });
   box.appendChild(h("div", { class:"hero" },
+    illo("hero-rocket", 220, "float"),
     h("h1", { class:"apptitle", text:"Ракета слов" }),
     h("p", { class:"sub", text:"Мой словарик английских слов" })
   ));
@@ -699,7 +737,7 @@ function screenWelcome(){
     profiles.slice().sort(function(a,b){ return (a.createdAt||0) - (b.createdAt||0); }).forEach(function(p){
       var n = wordsCountOf(p);
       list.appendChild(h("button", { class:"btn block person", type:"button", onclick:function(){ enterProfile(p); } },
-        h("span", { class:"avatar", text: (p.name||"?").charAt(0).toUpperCase() }),
+        avatarImg(p, 52),
         h("span", { class:"grow", style:"text-align:left" }, h("div", { text:p.name }),
           h("div", { class:"muted", text: n ? n + " " + plural(n, "слово", "слова", "слов") : "словарь пока пустой" }))
       ));
@@ -717,14 +755,23 @@ function screenWelcome(){
     if(secret.length < 3){ w.err = "Секретное слово — хотя бы 3 буквы."; render(); return; }
     if(profiles.some(function(p){ return norm(p.name) === norm(name); })){ w.err = "Ученик с таким именем уже есть на этом телефоне."; render(); return; }
     w.busy = true; w.err = ""; render();
-    createProfile(name, secret, function(p){
+    createProfile(name, secret, w.avatar, function(p){
       enterProfile(p);
       if(!state.words.length){
         view.form = { en:"", ru:"", editId:null, err:"", added:[], micMsg:"", listening:null }; render();
       }
     });
   }
+  var picker = h("div", { class:"avatars", role:"radiogroup", "aria-label":"Выбери зверька" });
+  for(var ai = 1; ai <= AVATARS; ai++){
+    (function(n){
+      picker.appendChild(h("button", { type:"button", class:"avpick" + (w.avatar === n ? " on" : ""), role:"radio",
+        "aria-checked": w.avatar === n ? "true" : "false", onclick:function(){ w.avatar = n; render(); } },
+        h("img", { src:"img/avatar-" + n + ".webp", width:64, height:64, alt:"Зверёк " + n, draggable:"false" })));
+    })(ai);
+  }
   box.appendChild(h("div", { class:"card stack" },
+    picker,
     h("label", { class:"field" }, "Как тебя зовут?",
       h("input", { type:"text", id:"p-name", value:w.name, placeholder:"Маша", autocapitalize:"words", oninput:upd("name") })),
     h("label", { class:"field" }, "Секретное слово",
@@ -755,7 +802,7 @@ function screenWords(){
 
   if(!state.words.length){
     box.appendChild(h("div", { class:"empty stack" },
-      ico("seed", 44),
+      illo("empty-words", 180, "pop"),
       h("p", { text:"Пока пусто. Добавь первое слово!" }),
       h("button", { class:"btn ghost", type:"button", onclick:function(){
         state.words = sampleWords(); save(); render(); toast("Добавлено 8 слов для примера");
@@ -857,6 +904,7 @@ function quickForm(){
         oninput:upd("ru"), onkeydown:onEnter }),
       micBtn(f, "ru")
     ),
+    f.listening ? h("div", { class:"center" }, illo("mic", 120, "listen")) : null,
     f.micMsg ? h("div", { class:"micmsg" + (f.listening ? " live" : ""), text:f.micMsg }) : null,
     f.err ? h("div", { class:"err", text:f.err }) : null,
     h("button", { class:"btn primary block", type:"button", onclick:submitForm }, ico("plus"), "Добавить"),
@@ -926,7 +974,8 @@ function wordRow(w){
     ),
     w.level >= 5 ? h("span", { class:"done-mark", "aria-label":"Выучено" }, ico("check", 18)) : ring(w.level||0, 5, 30, 4)
   );
-  var row = h("div", { class:"word" + (w.level >= 5 ? " mastered" : "") }, head);
+  var fresh = view.form && view.form.added && view.form.added[view.form.added.length - 1] === w.id;
+  var row = h("div", { class:"word" + (w.level >= 5 ? " mastered" : "") + (fresh ? " new" : "") }, head);
   if(!open) return row;
 
   var body = h("div", { class:"word-body" });
@@ -988,8 +1037,8 @@ function screenLearn(){
   }
   var box = h("div", { class:"stack" });
   if(view.i >= view.deck.length){
-    box.appendChild(h("div", { class:"empty" },
-      ico("check", 48),
+    box.appendChild(h("div", { class:"empty stack" },
+      illo("cards-done", 200, "pop wiggle"),
       h("h2", { class:"title", text:"Круг пройден!" })
     ));
     box.appendChild(h("button", { class:"btn primary block", type:"button", onclick:function(){
@@ -1039,9 +1088,9 @@ function screenLearn(){
 
 /* ============== screen: Игры ============== */
 var GAMES = [
-  { id:"spell", nm:"Собери слово",        ic:"letters" },
-  { id:"sent",  nm:"Составь предложение", ic:"puzzle" },
-  { id:"match", nm:"Найди пару",          ic:"pairs" }
+  { id:"spell", nm:"Собери слово",        ic:"letters", img:"game-letters" },
+  { id:"sent",  nm:"Составь предложение", ic:"puzzle",  img:"game-puzzle" },
+  { id:"match", nm:"Найди пару",          ic:"pairs",   img:"game-pairs" }
 ];
 function screenPlay(){
   if(!view.game){
@@ -1049,7 +1098,7 @@ function screenPlay(){
     GAMES.forEach(function(g){
       box.appendChild(h("button", { class:"btn gtile", type:"button",
         onclick:function(){ view.game = g.id; view.g = null; render(); } },
-        h("span", { class:"tile-ic" }, ico(g.ic, 30)), h("span", { text:g.nm })
+        illo(g.img, 64, "tile-img"), h("span", { text:g.nm })
       ));
     });
     return box;
@@ -1263,7 +1312,7 @@ function screenTest(){
     var box = h("div", { class:"stack" });
     var nq = Math.min(10, state.words.length);
     box.appendChild(h("div", { class:"card stack center" },
-      ico("target", 56),
+      illo("test-start", 170, "pop"),
       h("div", { class:"bignum", text:String(nq) }),
       h("div", { class:"muted", text: plural(nq, "вопрос", "вопроса", "вопросов") }),
       h("button", { class:"btn primary block", type:"button", onclick:function(){ view.quiz = buildQuiz(); render(); } }, ico("play"), "Начать")
@@ -1359,9 +1408,11 @@ function answerQuiz(value, w, cur){
 function testResult(q){
   var box = h("div", { class:"stack" });
   var perfect = q.correct === q.qs.length;
+  var mood = perfect ? "test-perfect" : q.correct >= q.qs.length * 0.6 ? "test-good" : "test-try";
   box.appendChild(h("div", { class:"card stack center" },
-    h("div", { class:"bigring" }, ring(q.correct, q.qs.length, 120, 10), h("div", { class:"bigring-txt", text: q.correct + "/" + q.qs.length })),
-    h("h2", { class:"title", text: perfect ? "Ни одной ошибки!" : "Молодец!" }),
+    illo(mood, 180, "pop" + (perfect ? " wiggle" : "")),
+    h("div", { class:"bigring" }, ring(q.correct, q.qs.length, 100, 9), h("div", { class:"bigring-txt", text: q.correct + "/" + q.qs.length })),
+    h("h2", { class:"title", text: perfect ? "Ни одной ошибки!" : q.correct >= q.qs.length * 0.6 ? "Молодец!" : "Хорошая тренировка!" }),
     h("div", { class:"row", style:"color:var(--ink2);font-weight:800" }, ico("star", 20), h("span", { text:"+" + (q.correct + (perfect ? 5 : 0)) }))
   ));
   if(q.wrong.length){
@@ -1386,6 +1437,7 @@ function screenAwards(){
   var box = h("div", { class:"stack" });
   var total = state.words.length, learned = state.words.filter(function(w){ return w.level >= 5; }).length;
   box.appendChild(h("div", { class:"card stack center" },
+    illo("awards", 160, "pop"),
     h("div", { class:"bigring" }, ring(learned, total || 1, 132, 12),
       h("div", { class:"bigring-txt" }, h("div", { class:"bignum", text:String(learned) }), h("div", { class:"muted", text:"из " + total }))),
     h("div", { class:"muted", text:"слов выучено" })
