@@ -224,6 +224,17 @@ input::placeholder,textarea::placeholder{color:var(--ink2);opacity:.65;font-weig
 @keyframes ringin{from{--frac:0}}
 .progressbar i{transition:width .35s ease}
 
+/* ---- listening overlay ---- */
+.listen-overlay{position:fixed;inset:0;z-index:60;background:var(--bg);display:flex;align-items:center;justify-content:center;
+  padding:24px 16px;padding-top:calc(24px + env(safe-area-inset-top,0px));padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));animation:enter .25s ease both}
+.listen-box{display:flex;flex-direction:column;align-items:center;gap:18px;width:100%;max-width:420px;text-align:center}
+.listen-title{font-size:24px;font-weight:800;letter-spacing:-.01em;text-wrap:balance}
+.listen-word{font-size:20px;font-weight:800;color:var(--accent);background:var(--accent-soft);border-radius:12px;padding:6px 14px}
+.listen-dots{display:flex;gap:8px;height:12px}
+.listen-dots i{width:10px;height:10px;border-radius:50%;background:var(--accent);animation:blink 1.2s ease-in-out infinite}
+.listen-dots i:nth-child(2){animation-delay:.2s}.listen-dots i:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+
 /* ---- toast ---- */
 #toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:50;display:flex;flex-direction:column;
   gap:8px;align-items:center;pointer-events:none;width:max-content;max-width:90vw}
@@ -247,6 +258,7 @@ input::placeholder,textarea::placeholder{color:var(--ink2);opacity:.65;font-weig
   <div class="action" id="action"></div>
   <nav class="tabbar" id="tabbar" aria-label="Разделы"></nav>
 </div>
+<div id="listen" class="listen-overlay" hidden></div>
 <div id="toast"></div>
 
 <script>
@@ -664,7 +676,23 @@ var screenEl, tabbarEl;
 
 function go(t){ stopListening(); tab = t; view = {}; render(); if(screenEl) screenEl.scrollTop = 0; }
 
+function renderListen(){
+  var ov = document.getElementById("listen");
+  var f = view.form;
+  if(!(f && f.listening && tab === "words")){ ov.hidden = true; ov.textContent = ""; return; }
+  var key = f.listening;
+  ov.textContent = "";
+  ov.appendChild(h("div", { class:"listen-box" },
+    illo("mic", 200, "listen"),
+    h("div", { class:"listen-title", text: key === "en" ? "Скажи слово по-английски" : "Скажи перевод по-русски" }),
+    key === "ru" && f.en ? h("div", { class:"listen-word", text:f.en }) : null,
+    h("div", { class:"listen-dots" }, h("i"), h("i"), h("i")),
+    h("button", { class:"btn block", type:"button", onclick:function(){ stopListening(); f.listening = null; f.micMsg = ""; render(); } }, "Отмена")
+  ));
+  ov.hidden = false;
+}
 function render(){
+  renderListen();
   var actionEl = document.getElementById("action");
   var who = document.getElementById("who");
   var topbar = document.querySelector(".topbar");
@@ -896,7 +924,6 @@ function quickForm(){
         oninput:upd("ru"), onkeydown:onEnter }),
       micBtn(f, "ru")
     ),
-    f.listening ? h("div", { class:"center" }, illo("mic", 120, "listen")) : null,
     f.micMsg ? h("div", { class:"micmsg" + (f.listening ? " live" : ""), text:f.micMsg }) : null,
     f.err ? h("div", { class:"err", text:f.err }) : null,
     h("button", { class:"btn primary block", type:"button", onclick:submitForm }, ico("plus"), "Добавить"),
