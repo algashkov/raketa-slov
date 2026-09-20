@@ -43,6 +43,15 @@ body{margin:0;background:var(--bg);color:var(--ink);
 .chip{font-size:13px;font-weight:700;color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap}
 .sync{font-size:11px;color:var(--ink2);cursor:default}
 
+.who{appearance:none;border:1px solid var(--line);background:var(--surface2);color:var(--ink);border-radius:999px;
+  padding:4px 12px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;max-width:40vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.welcome .hero{padding:26px 0 6px}
+.apptitle{font-size:34px;font-weight:800;letter-spacing:-.03em;margin:0 0 6px;line-height:1.05}
+.person{justify-content:flex-start;padding:10px 12px;min-height:64px}
+.avatar{flex:0 0 auto;width:42px;height:42px;border-radius:50%;background:var(--accent);color:var(--on-accent);
+  display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
+.muted{font-size:13px;color:var(--ink2);font-weight:600}
+
 /* ---- screen ---- */
 main#screen{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-block:18px 28px;padding-left:16px;padding-right:16px}
 h2.title{font-size:22px;font-weight:800;letter-spacing:-.015em;margin:0 0 3px;text-wrap:balance}
@@ -192,6 +201,7 @@ input::placeholder,textarea::placeholder{color:var(--ink2);opacity:.55;font-weig
 <div id="app">
   <header class="topbar">
     <div class="brand">Ракета слов</div>
+    <button class="who" id="who" type="button" hidden></button>
     <span class="chip" id="chip-stars">0 ★</span>
     <span class="chip" id="chip-streak">0 дн.</span>
     <span class="sync" id="sync" title="Где хранятся слова"></span>
@@ -259,9 +269,9 @@ function makeWord(en, ru, ex, exRu, sample, art){
     exRu:String(exRu||"").trim(), level:0, right:0, wrong:0, seen:0, lastReview:0,
     addedAt:Date.now(), sentences:[], sample:!!sample };
 }
+function sampleWords(){ return SEED.map(function(s){ return makeWord(s[0],s[1],s[2],s[3],true); }); }
 function freshState(){
-  return { rev:0, updatedAt:Date.now(),
-    words: SEED.map(function(s){ return makeWord(s[0],s[1],s[2],s[3],true); }),
+  return { rev:0, updatedAt:Date.now(), words: [],
     stats:{ stars:0, streak:0, lastDay:null, tests:0, perfect:0, badges:[] } };
 }
 var state = freshState();
@@ -282,39 +292,106 @@ function migrate(raw){
   return s;
 }
 
+/* ============== profiles ============== */
+var PROFILES_LS = "raketa-profiles-v1", ACTIVE_LS = "raketa-active-v1", LEGACY_LS = "raketa-slov-v1";
+var profiles = [], profile = null;
+
+function loadProfiles(){
+  try{ var raw = localStorage.getItem(PROFILES_LS); var p = raw ? JSON.parse(raw) : null; profiles = Array.isArray(p) ? p : []; }catch(e){ profiles = []; }
+}
+function saveProfiles(){ try{ localStorage.setItem(PROFILES_LS, JSON.stringify(profiles)); }catch(e){} }
+function sha256(str){
+  if(window.crypto && crypto.subtle && window.TextEncoder){
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(str)).then(function(buf){
+      return Array.prototype.map.call(new Uint8Array(buf), function(b){ return ("0" + b.toString(16)).slice(-2); }).join("");
+    }).catch(function(){ return djb2(str); });
+  }
+  return Promise.resolve(djb2(str));
+}
+function djb2(str){ var hv = 5381, i; for(i=0;i<str.length;i++) hv = ((hv * 33) ^ str.charCodeAt(i)) >>> 0; return "x" + hv.toString(16); }
+function profileKey(name, secret){ return sha256(norm(name) + "|" + norm(secret)); }
+function stateKey(){ return "raketa-state-" + profile.id; }
+function wordsCountOf(p){
+  try{ var raw = localStorage.getItem("raketa-state-" + p.id); var st = raw ? JSON.parse(raw) : null; return st && Array.isArray(st.words) ? st.words.length : 0; }catch(e){ return 0; }
+}
+function enterProfile(p){
+  leaveDb();
+  profile = p;
+  try{ localStorage.setItem(ACTIVE_LS, p.id); }catch(e){}
+  state = freshState();
+  loadLocal();
+  tab = "words"; view = {};
+  render();
+  initDb();
+}
+function leaveProfile(){
+  stopListening(); leaveDb();
+  profile = null;
+  try{ localStorage.removeItem(ACTIVE_LS); }catch(e){}
+  tab = "welcome"; view = {};
+  render();
+}
+function createProfile(name, secret, done){
+  profileKey(name, secret).then(function(key){
+    var p = { id: uid(), name: name.trim(), key: key, createdAt: Date.now() };
+    profiles.push(p); saveProfiles();
+    // старые слова без профиля (до появления учеников) переходят к первому созданному ученику
+    try{
+      var legacy = localStorage.getItem(LEGACY_LS);
+      if(legacy && profiles.length === 1){
+        var st = JSON.parse(legacy);
+        if(st && Array.isArray(st.words) && st.words.some(function(w){ return !w.sample; })){
+          localStorage.setItem("raketa-state-" + p.id, legacy);
+        }
+        localStorage.removeItem(LEGACY_LS);
+      }
+    }catch(e){}
+    done(p);
+  });
+}
+
 /* ============== storage: db + localStorage ============== */
-var LS = "raketa-slov-v1";
-var db = null, pending = false, dirty = false, saveTimer = null, hadLocal = false;
+var db = null, dbUnsub = null, pending = false, dirty = false, saveTimer = null;
 
 function setSync(mode){
   var el = document.getElementById("sync");
   if(!el) return;
   if(mode === "cloud"){ el.textContent = "облако"; el.title = "Слова сохраняются и доступны на всех устройствах"; }
   else if(mode === "local"){ el.textContent = "только это устройство"; el.title = "Слова сохраняются в этом браузере"; }
+  else if(mode === "off"){ el.textContent = ""; el.title = ""; }
   else { el.textContent = "…"; el.title = "Сохраняю…"; }
 }
 function loadLocal(){
+  if(!profile) return;
   try{
-    var raw = localStorage.getItem(LS);
-    if(raw){ var p = JSON.parse(raw); if(p && Array.isArray(p.words) && p.words.length){ state = migrate(p); hadLocal = true; } }
+    var raw = localStorage.getItem(stateKey());
+    if(raw){ var p = JSON.parse(raw); if(p && Array.isArray(p.words)) state = migrate(p); }
   }catch(e){}
 }
-function saveLocal(){ try{ localStorage.setItem(LS, JSON.stringify(state)); }catch(e){} }
+function saveLocal(){ if(!profile) return; try{ localStorage.setItem(stateKey(), JSON.stringify(state)); }catch(e){} }
 function save(){
   state.rev = (state.rev || 0) + 1;
   state.updatedAt = Date.now();
   saveLocal();
   if(db){ dirty = true; clearTimeout(saveTimer); saveTimer = setTimeout(flush, 700); }
 }
+function docRef(){ return db.doc("profiles/" + profile.key); }
+function leaveDb(){
+  clearTimeout(saveTimer);
+  if(db && dirty && profile){ try{ docRef().set(JSON.parse(JSON.stringify(state))); }catch(e){} }
+  if(dbUnsub){ try{ dbUnsub(); }catch(e){} }
+  dbUnsub = null; db = null; pending = false; dirty = false;
+}
 function flush(){
-  if(!db || pending || !dirty) return;
+  if(!db || !profile || pending || !dirty) return;
   pending = true; dirty = false; setSync("wait");
   var body = JSON.parse(JSON.stringify(state));
-  db.doc("app/state").set(body).then(function(){
-    pending = false; setSync("cloud");
+  var d = db;
+  docRef().set(body).then(function(){
+    pending = false; if(db !== d) return; setSync("cloud");
     if(dirty) setTimeout(flush, 400);
   }, function(err){
-    pending = false;
+    pending = false; if(db !== d) return;
     if(err && (err.code === "invalid_argument" || err.code === "revoked" || err.code === "not_granted")){
       db = null; setSync("local");
     }else{
@@ -323,26 +400,31 @@ function flush(){
   });
 }
 function initDb(){
+  if(!profile){ setSync("off"); return; }
   if(!(window.claude && typeof window.claude.use === "function")){ setSync("local"); return; }
+  setSync("wait");
+  var p = profile;
   window.claude.use("db").then(function(d){
+    if(profile !== p) return;
     if(!d){ setSync("local"); return; }
     db = d;
-    d.doc("app/state").get().then(function(snap){
+    docRef().get().then(function(snap){
+      if(profile !== p || db !== d) return;
       var remote = snap && snap.exists ? snap.data() : null;
-      if(remote && Array.isArray(remote.words) && remote.words.length && (remote.rev||0) >= (state.rev||0)){
-        state = migrate(remote); saveLocal(); setSync("cloud"); render();
-      }else{
+      if(remote && Array.isArray(remote.words) && (remote.rev||0) >= (state.rev||0)){
+        state = migrate(remote); saveLocal(); render();
+      }else if(state.rev > 0){
         dirty = true; flush();
       }
       setSync("cloud");
-    }, function(){ setSync("local"); });
-    d.doc("app/state").onSnapshot(function(snap){
-      if(!snap.exists || pending || dirty) return;
+    }, function(){ if(profile === p) setSync("local"); });
+    dbUnsub = docRef().onSnapshot(function(snap){
+      if(profile !== p || db !== d || !snap.exists || pending || dirty) return;
       var r = snap.data();
       if(!r || !Array.isArray(r.words)) return;
       if((r.rev||0) > (state.rev||0)){ state = migrate(r); saveLocal(); render(); }
     }, function(){});
-  }, function(){ setSync("local"); });
+  }, function(){ if(profile === p) setSync("local"); });
 }
 
 /* ============== speech ============== */
@@ -484,6 +566,20 @@ var screenEl, tabbarEl;
 function go(t){ stopListening(); tab = t; view = {}; render(); if(screenEl) screenEl.scrollTop = 0; }
 
 function render(){
+  var actionEl = document.getElementById("action");
+  var who = document.getElementById("who");
+  if(!profile || tab === "welcome"){
+    document.getElementById("chip-stars").textContent = "";
+    document.getElementById("chip-streak").textContent = "";
+    who.textContent = ""; who.hidden = true;
+    tabbarEl.textContent = ""; tabbarEl.hidden = true;
+    actionEl.textContent = "";
+    screenEl.textContent = "";
+    screenEl.appendChild(screenWelcome());
+    return;
+  }
+  tabbarEl.hidden = false;
+  who.hidden = false; who.textContent = profile.name; who.title = "Сменить ученика";
   document.getElementById("chip-stars").textContent = (state.stats.stars||0) + " ★";
   var streakChip = document.getElementById("chip-streak");
   streakChip.textContent = (state.stats.streak||0) + " дн.";
@@ -493,7 +589,6 @@ function render(){
     tabbarEl.appendChild(h("button", { type:"button", "aria-current": tab === t.id ? "true" : "false",
       onclick:function(){ go(t.id); } }, t.nm));
   });
-  var actionEl = document.getElementById("action");
   actionEl.textContent = "";
   if(tab === "words" && !view.form){
     actionEl.appendChild(h("button", { class:"btn primary block", type:"button", onclick:function(){
@@ -511,20 +606,85 @@ function render(){
   screenEl.appendChild(node);
 }
 
+/* ============== screen: приветствие / ученики ============== */
+function screenWelcome(){
+  var w = view.welcome || (view.welcome = { creating: profiles.length === 0, name:"", secret:"", err:"", busy:false });
+  var box = h("div", { class:"stack welcome" });
+  box.appendChild(h("div", { class:"hero" },
+    h("h1", { class:"apptitle", text:"Ракета слов" }),
+    h("p", { class:"sub", text:"Свой словарик английских слов: слушаем, пишем, играем и проверяем себя." })
+  ));
+  if(profiles.length){
+    box.appendChild(h("div", { class:"label", text:"Кто занимается?" }));
+    var list = h("div", { class:"stack" });
+    profiles.slice().sort(function(a,b){ return (a.createdAt||0) - (b.createdAt||0); }).forEach(function(p){
+      var n = wordsCountOf(p);
+      list.appendChild(h("button", { class:"btn block person", type:"button", onclick:function(){ enterProfile(p); } },
+        h("span", { class:"avatar", text: (p.name||"?").charAt(0).toUpperCase() }),
+        h("span", { class:"grow", style:"text-align:left" }, h("div", { text:p.name }),
+          h("div", { class:"muted", text: n ? n + " " + plural(n, "слово", "слова", "слов") : "словарь пока пустой" }))
+      ));
+    });
+    box.appendChild(list);
+  }
+  if(!w.creating){
+    box.appendChild(h("button", { class:"btn ghost block", type:"button", onclick:function(){ w.creating = true; render(); } }, "Новый ученик"));
+    return box;
+  }
+  function upd(k){ return function(ev){ w[k] = ev.target.value; }; }
+  function submit(){
+    var name = (w.name||"").trim(), secret = (w.secret||"").trim();
+    if(name.length < 1){ w.err = "Напиши имя."; render(); return; }
+    if(secret.length < 3){ w.err = "Секретное слово — хотя бы 3 буквы."; render(); return; }
+    if(profiles.some(function(p){ return norm(p.name) === norm(name); })){ w.err = "Ученик с таким именем уже есть на этом телефоне."; render(); return; }
+    w.busy = true; w.err = ""; render();
+    createProfile(name, secret, function(p){
+      enterProfile(p);
+      if(!state.words.length){
+        view.form = { en:"", ru:"", editId:null, err:"", added:[], micMsg:"", listening:null }; render();
+      }
+    });
+  }
+  box.appendChild(h("div", { class:"card stack" },
+    h("div", { class:"label", text: profiles.length ? "Новый ученик" : "Давай познакомимся" }),
+    h("label", { class:"field" }, "Как тебя зовут?",
+      h("input", { type:"text", id:"p-name", value:w.name, placeholder:"Маша", autocapitalize:"words", oninput:upd("name") })),
+    h("label", { class:"field" }, "Секретное слово",
+      h("input", { type:"text", id:"p-secret", value:w.secret, placeholder:"зелёный дракон", autocapitalize:"off", oninput:upd("secret"),
+        onkeydown:function(ev){ if(ev.key === "Enter") submit(); } })),
+    h("div", { class:"muted", text:"Секретное слово понадобится, чтобы открыть свой словарь на другом телефоне. Запомни его или запиши." }),
+    w.err ? h("div", { class:"err", text:w.err }) : null,
+    h("div", { class:"row" },
+      h("button", { class:"btn primary grow", type:"button", disabled: w.busy ? true : null, onclick:submit }, w.busy ? "Создаю…" : "Создать словарь"),
+      profiles.length ? h("button", { class:"btn ghost", type:"button", onclick:function(){ w.creating = false; render(); } }, "Отмена") : null
+    )
+  ));
+  return box;
+}
+function plural(n, one, few, many){
+  var m10 = n % 10, m100 = n % 100;
+  if(m10 === 1 && m100 !== 11) return one;
+  if(m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few;
+  return many;
+}
+
 /* ============== screen: Слова ============== */
 function screenWords(){
   var box = h("div", { class:"stack" });
   var mine = state.words.filter(function(w){ return !w.sample; }).length;
   box.appendChild(h("div", null,
     h("h2", { class:"title", text:"Мои слова" }),
-    h("p", { class:"sub", text: state.words.length + " слов, из них твоих: " + mine })
+    h("p", { class:"sub", text: state.words.length + " " + plural(state.words.length, "слово", "слова", "слов") + (mine !== state.words.length ? ", твоих: " + mine : "") })
   ));
 
   if(view.form) box.appendChild(view.form.editId ? wordForm() : quickForm());
 
   if(!state.words.length){
-    box.appendChild(h("div", { class:"empty" },
-      h("p", { text:"Пока пусто. Добавь первое слово из урока!" })));
+    box.appendChild(h("div", { class:"empty stack" },
+      h("p", { text:"Словарь пока пустой. Добавь первое слово из урока — или начни с примеров." }),
+      h("button", { class:"btn ghost", type:"button", onclick:function(){
+        state.words = sampleWords(); save(); render(); toast("Добавлено 8 слов для примера");
+      } }, "Добавить 8 слов для примера")));
     return box;
   }
 
@@ -1225,11 +1385,21 @@ function screenAwards(){
 function start(hot){
   screenEl = document.getElementById("screen");
   tabbarEl = document.getElementById("tabbar");
-  loadLocal();
-  if(hot && hot.tab) tab = hot.tab;
-  setSync("wait");
-  render();
-  initDb();
+  document.getElementById("who").addEventListener("click", function(){
+    if(!profile) return;
+    if(confirm("Сменить ученика? Слова и прогресс " + profile.name + " сохранятся.")) leaveProfile();
+  });
+  loadProfiles();
+  var activeId = null;
+  try{ activeId = localStorage.getItem(ACTIVE_LS); }catch(e){}
+  var active = profiles.filter(function(p){ return p.id === activeId; })[0];
+  if(active){
+    profile = active; state = freshState(); loadLocal();
+    if(hot && hot.tab && hot.tab !== "welcome") tab = hot.tab;
+    render(); initDb();
+  }else{
+    tab = "welcome"; render();
+  }
   if(window.claude && window.claude.hot && window.claude.hot.snapshot){
     try{ window.claude.hot.snapshot(function(){ return { tab:tab }; }); }catch(e){}
   }
