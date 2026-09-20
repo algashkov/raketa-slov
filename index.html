@@ -252,6 +252,9 @@ input::placeholder,textarea::placeholder{color:var(--ink2);opacity:.65;font-weig
 .listen-dots i{width:10px;height:10px;border-radius:50%;background:var(--accent);animation:blink 1.2s ease-in-out infinite}
 .listen-dots i:nth-child(2){animation-delay:.2s}.listen-dots i:nth-child(3){animation-delay:.4s}
 @keyframes blink{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+.countdown{width:100%;height:6px;border-radius:3px;background:var(--surface);overflow:hidden}
+.countdown i{display:block;height:100%;background:var(--accent);border-radius:3px;animation:countdown linear both}
+@keyframes countdown{from{width:100%}to{width:0}}
 
 /* ---- toast ---- */
 #toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:50;display:flex;flex-direction:column;
@@ -705,6 +708,7 @@ function renderListen(){
     h("div", { class:"listen-title", text: key === "en" ? "Скажи слово по-английски" : "Скажи перевод по-русски" }),
     key === "ru" && f.en ? h("div", { class:"listen-word", text:f.en }) : null,
     h("div", { class:"listen-dots" }, h("i"), h("i"), h("i")),
+    h("div", { class:"countdown" }, h("i", { style:"animation-duration:" + LISTEN_MS + "ms" })),
     h("button", { class:"btn block", type:"button", onclick:function(){ stopListening(); f.listening = null; f.micMsg = ""; render(); } }, "Отмена")
   ));
   ov.hidden = false;
@@ -861,9 +865,10 @@ function screenWords(){
 
 /* --- voice input --- */
 var SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
-var recog = null;
+var recog = null, recogTimer = null;
+var LISTEN_MS = 6000;
 function canListen(){ return !!SR; }
-function stopListening(){ var r = recog; recog = null; if(r){ try{ r.onresult = r.onerror = r.onend = null; r.stop(); }catch(e){} } }
+function stopListening(){ clearTimeout(recogTimer); var r = recog; recog = null; if(r){ try{ r.onresult = r.onerror = r.onend = null; r.stop(); }catch(e){} } }
 function listen(lang, onResult, onDone){
   if(!SR) return;
   stopListening();
@@ -871,6 +876,7 @@ function listen(lang, onResult, onDone){
   r.lang = lang; r.interimResults = false; r.maxAlternatives = 1; r.continuous = false;
   var got = false;
   r.onresult = function(ev){
+    clearTimeout(recogTimer);
     try{ var t = ev.results[0][0].transcript; got = true; onResult(String(t).trim()); }catch(e){}
     try{ r.stop(); }catch(e){}
   };
@@ -884,8 +890,15 @@ function listen(lang, onResult, onDone){
     if(recog === r) recog = null;
     onDone(false, msg);
   };
-  r.onend = function(){ if(recog === r){ recog = null; onDone(got, ""); } };
+  r.onend = function(){ clearTimeout(recogTimer); if(recog === r){ recog = null; onDone(got, got ? "" : "Не услышал. Нажми микрофон и скажи ещё раз."); } };
   recog = r;
+  clearTimeout(recogTimer);
+  recogTimer = setTimeout(function(){
+    if(recog !== r) return;
+    recog = null;
+    try{ r.onresult = r.onerror = r.onend = null; r.abort(); }catch(e){}
+    onDone(false, "Время вышло. Нажми микрофон и скажи слово чётко.");
+  }, LISTEN_MS);
   if(synth){ try{ synth.cancel(); }catch(e){} }
   try{ r.start(); }catch(e){ recog = null; onDone(false, "Микрофон занят. Попробуй ещё раз через секунду."); }
 }
