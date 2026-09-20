@@ -2,11 +2,11 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap">
 <style>
 :root{
-  --bg:#F6F7F9; --surface:#FFFFFF; --surface2:#F0F2F6;
-  --ink:#1E2430; --ink2:#6A7385; --line:#E3E6EC;
-  --accent:#3B5BDB; --accent-soft:#EDF0FC; --on-accent:#FFFFFF;
-  --good:#2F7D5A; --good-soft:#EBF3EF;
-  --bad:#B04A44; --bad-soft:#FAEEED;
+  --bg:#EEF1F6; --surface:#FFFFFF; --surface2:#E4E8F0;
+  --ink:#1E2430; --ink2:#6A7385; --line:#D9DEE8;
+  --accent:#3B5BDB; --accent-soft:#E3E9FC; --on-accent:#FFFFFF;
+  --good:#2F9E6E; --good-soft:#DFF3EA;
+  --bad:#D2554B; --bad-soft:#FBE7E5;
   --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
   --grape:var(--accent); --grape-soft:var(--accent-soft); --grape-deep:var(--accent);
   --mint:var(--good); --mint-soft:var(--good-soft); --mint-deep:var(--good);
@@ -16,185 +16,197 @@
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#13161C; --surface:#1B1F27; --surface2:#232832;
-    --ink:#E9EBF0; --ink2:#9BA3B2; --line:#2F3540;
-    --accent:#8FA3FF; --accent-soft:#232941; --on-accent:#0F1424;
-    --good:#67C094; --good-soft:#1A2B24;
-    --bad:#E08A84; --bad-soft:#2E2121;
+    --bg:#12151B; --surface:#1C2028; --surface2:#2A2F3A;
+    --ink:#EDF0F6; --ink2:#9AA3B4; --line:#343A47;
+    --accent:#8FA3FF; --accent-soft:#283052; --on-accent:#0F1424;
+    --good:#5FC495; --good-soft:#1B3A2E;
+    --bad:#E4857C; --bad-soft:#3A2323;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#13161C; --surface:#1B1F27; --surface2:#232832;
-  --ink:#E9EBF0; --ink2:#9BA3B2; --line:#2F3540;
-  --accent:#8FA3FF; --accent-soft:#232941; --on-accent:#0F1424;
-  --good:#67C094; --good-soft:#1A2B24;
-  --bad:#E08A84; --bad-soft:#2E2121;
+  --bg:#12151B; --surface:#1C2028; --surface2:#2A2F3A;
+  --ink:#EDF0F6; --ink2:#9AA3B4; --line:#343A47;
+  --accent:#8FA3FF; --accent-soft:#283052; --on-accent:#0F1424;
+  --good:#5FC495; --good-soft:#1B3A2E;
+  --bad:#E4857C; --bad-soft:#3A2323;
 }
 *{box-sizing:border-box}
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--ink);
-  font-family:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:16px;line-height:1.5;
+  font-family:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:17px;line-height:1.45;
   -webkit-text-size-adjust:100%}
 #app{display:flex;flex-direction:column;height:100%;max-width:600px;margin:0 auto;background:var(--bg)}
 
 /* ---- top bar ---- */
-.topbar{flex:0 0 auto;display:flex;align-items:baseline;gap:10px;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
-.brand{margin-right:auto;font-weight:800;font-size:17px;letter-spacing:-.01em}
-.chip{font-size:13px;font-weight:700;color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.topbar{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:12px 16px 6px}
+.brand{margin-right:auto;font-weight:800;font-size:18px;letter-spacing:-.01em}
+.chip{font-size:14px;font-weight:800;color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap}
 .sync{font-size:11px;color:var(--ink2);cursor:default}
-
-.who{appearance:none;border:1px solid var(--line);background:var(--surface2);color:var(--ink);border-radius:999px;
-  padding:4px 12px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;max-width:40vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.welcome .hero{padding:26px 0 6px}
-.apptitle{font-size:34px;font-weight:800;letter-spacing:-.03em;margin:0 0 6px;line-height:1.05}
-.person{justify-content:flex-start;padding:10px 12px;min-height:64px}
-.avatar{flex:0 0 auto;width:42px;height:42px;border-radius:50%;background:var(--accent);color:var(--on-accent);
-  display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
-.muted{font-size:13px;color:var(--ink2);font-weight:600}
+.who{appearance:none;border:0;background:var(--surface);color:var(--ink);border-radius:999px;
+  padding:6px 12px 6px 8px;font:inherit;font-size:14px;font-weight:800;cursor:pointer;max-width:40vw;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
 
 /* ---- screen ---- */
-main#screen{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-block:18px 28px;padding-left:16px;padding-right:16px}
-h2.title{font-size:22px;font-weight:800;letter-spacing:-.015em;margin:0 0 3px;text-wrap:balance}
-p.sub{margin:0 0 16px;color:var(--ink2);font-size:14px}
+main#screen{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-block:10px 28px;padding-left:16px;padding-right:16px}
+h2.title{font-size:24px;font-weight:800;letter-spacing:-.015em;margin:0;text-wrap:balance}
+p.sub{margin:0;color:var(--ink2);font-size:15px}
 .stack{display:flex;flex-direction:column;gap:12px}
+.center{align-items:center;text-align:center}
 .row{display:flex;gap:10px;align-items:center}
 .row.wrap{flex-wrap:wrap}
 .grow{flex:1 1 auto;min-width:0}
-.label{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
+.label{font-size:13px;font-weight:800;color:var(--ink2)}
+.muted{font-size:14px;color:var(--ink2);font-weight:700}
 
 /* ---- buttons ---- */
-.btn{appearance:none;-webkit-appearance:none;border:1px solid var(--line);border-radius:12px;padding:12px 16px;min-height:50px;
-  font:inherit;font-weight:700;color:var(--ink);background:var(--surface);cursor:pointer;
+.btn{appearance:none;-webkit-appearance:none;border:0;border-radius:14px;padding:12px 16px;min-height:52px;
+  font:inherit;font-weight:800;color:var(--ink);background:var(--surface);cursor:pointer;
   display:inline-flex;align-items:center;justify-content:center;gap:8px;text-align:center;
-  transition:background-color .12s ease,border-color .12s ease}
-.btn:active{background:var(--surface2)}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:800;font-size:17px}
-.btn.good{border-color:var(--good);color:var(--good)}
-.btn.bad{border-color:var(--bad);color:var(--bad)}
-.btn.warn{border-color:var(--line)}
-.btn.ghost{background:transparent;min-height:42px;padding:8px 12px;font-size:14px;font-weight:700;color:var(--ink2)}
+  transition:background-color .12s ease,transform .08s ease}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--accent);color:var(--on-accent);font-size:18px}
+.btn.good{background:var(--good-soft);color:var(--good)}
+.btn.bad{background:var(--bad-soft);color:var(--bad)}
+.btn.ghost{background:transparent;color:var(--ink2);min-height:44px;padding:8px 12px;font-size:15px}
 .btn.block{width:100%}
-.btn.small{min-height:38px;padding:6px 12px;font-size:14px}
+.btn.small{min-height:40px;padding:6px 12px;font-size:15px}
+.btn.iconbtn{width:44px;padding:0}
 .btn[disabled]{opacity:.45;pointer-events:none}
-.speaker{width:46px;height:46px;min-height:46px;padding:0;flex:0 0 auto;color:var(--accent)}
-.ico{display:inline-flex;align-items:center;justify-content:center}
+.speaker{width:48px;height:48px;min-height:48px;padding:0;flex:0 0 auto;color:var(--accent);background:var(--surface2)}
+.ico{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
 .ico svg{display:block}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ring{display:inline-flex;flex:0 0 auto}
+.ring svg{display:block}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
 /* ---- cards ---- */
-.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
-.hint{background:var(--surface2);border-radius:12px;padding:10px 12px;font-size:14px;color:var(--ink2)}
+.card{background:var(--surface);border-radius:18px;padding:16px}
+.hint{background:var(--surface);border-radius:14px;padding:12px 14px;font-size:16px;color:var(--ink2);font-weight:700}
 
 /* ---- word list ---- */
 .wordlist{display:flex;flex-direction:column;gap:8px}
-.word{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.word.mastered{border-color:var(--good)}
-.word-head{display:flex;align-items:center;gap:12px;padding:10px 12px}
+.word{background:var(--surface);border-radius:16px;overflow:hidden}
+.word-head{display:flex;align-items:center;gap:12px;padding:10px 14px 10px 10px}
 .word-main{flex:1 1 auto;min-width:0;text-align:left;background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer}
-.word-en{font-size:19px;font-weight:800;line-height:1.2;word-break:break-word;letter-spacing:-.01em}
-.word-ru{color:var(--ink2);font-size:14px;word-break:break-word}
-.dots{display:flex;gap:3px;margin-top:6px}
-.dots i{width:16px;height:3px;border-radius:2px;background:var(--line)}
-.dots i.on{background:var(--good)}
-.tag{display:inline-block;padding:1px 6px;border-radius:4px;background:var(--surface2);color:var(--ink2);
-  font-size:11px;font-weight:700;margin-left:6px;vertical-align:2px;letter-spacing:.02em}
-.word-body{padding:12px;display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--line)}
-.example{background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:15px}
-.example .ru{display:block;color:var(--ink2);font-size:13px;margin-top:3px}
+.word-en{font-size:20px;font-weight:800;line-height:1.2;word-break:break-word;letter-spacing:-.01em}
+.word-ru{color:var(--ink2);font-size:15px;font-weight:600;word-break:break-word}
+.done-mark{width:30px;height:30px;border-radius:50%;background:var(--good);color:#fff;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+.tag{display:inline-block;padding:1px 7px;border-radius:6px;background:var(--surface2);color:var(--ink2);
+  font-size:12px;font-weight:800;margin-left:6px;vertical-align:2px}
+.word-body{padding:4px 12px 12px;display:flex;flex-direction:column;gap:10px}
+.example{background:var(--surface2);border-radius:12px;padding:10px 12px;font-size:16px}
+.example .ru{display:block;color:var(--ink2);font-size:14px;margin-top:2px}
+.acts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.btn.act{flex-direction:column;gap:4px;min-height:60px;padding:8px 4px;font-size:13px;font-weight:800;color:var(--ink2);background:var(--surface2)}
+.btn.act .ico{color:var(--ink)}
 .mine{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
-.mine li{background:var(--surface2);border-radius:10px;padding:8px 10px;font-size:14px;display:flex;gap:8px;align-items:center}
+.mine li{background:var(--good-soft);border-radius:12px;padding:6px 6px 6px 12px;font-size:15px;display:flex;gap:6px;align-items:center}
 .mine li span{flex:1 1 auto}
 
 /* ---- forms ---- */
-label.field{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700;color:var(--ink2)}
-input[type=text],textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--surface);
-  border:1px solid var(--line);border-radius:10px;padding:12px;width:100%;min-height:48px}
-textarea{min-height:72px;resize:vertical}
-input:focus,textarea:focus{border-color:var(--accent);outline:none}
-input::placeholder,textarea::placeholder{color:var(--ink2);opacity:.55;font-weight:400}
-.err{color:var(--bad);font-size:13px;font-weight:700}
-.mic{width:50px;height:50px;min-height:50px;padding:0;flex:0 0 auto;color:var(--accent)}
-.mic.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent);animation:pulse 1.2s ease-in-out infinite}
+label.field{display:flex;flex-direction:column;gap:5px;font-size:14px;font-weight:800;color:var(--ink2)}
+input[type=text],textarea{font:inherit;font-size:17px;color:var(--ink);background:var(--surface2);
+  border:0;border-radius:14px;padding:13px 14px;width:100%;min-height:52px}
+textarea{min-height:76px;resize:vertical}
+input:focus,textarea:focus{outline:3px solid var(--accent-soft)}
+input::placeholder,textarea::placeholder{color:var(--ink2);opacity:.65;font-weight:600}
+.err{color:var(--bad);font-size:14px;font-weight:800}
+.mic{width:52px;height:52px;min-height:52px;padding:0;flex:0 0 auto;color:var(--accent);background:var(--surface2)}
+.mic.on{background:var(--accent);color:var(--on-accent);animation:pulse 1.2s ease-in-out infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 var(--accent-soft)}50%{box-shadow:0 0 0 8px var(--accent-soft)}}
-.micmsg{font-size:14px;color:var(--ink2)}
-.micmsg.live{color:var(--accent);font-weight:700}
-.quick input{min-height:52px;font-size:18px}
-.added{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.tag.big{font-size:14px;padding:4px 10px;margin:0;color:var(--ink)}
-.slot.art{width:auto;padding:0 10px;border-style:dashed;color:var(--ink2);font-family:'Nunito',sans-serif;font-size:18px}
+.micmsg{font-size:15px;color:var(--ink2);font-weight:700}
+.micmsg.live{color:var(--accent)}
+.quick input{min-height:54px;font-size:18px;background:var(--bg)}
+.added{display:flex;flex-wrap:wrap;gap:6px;align-items:center;color:var(--good)}
+.tag.big{font-size:15px;padding:4px 10px;margin:0;color:var(--ink);background:var(--good-soft)}
+.slot.art{width:auto;padding:0 10px;color:var(--ink2);font-family:'Nunito',sans-serif;font-size:18px;background:transparent}
 
-/* ---- flashcard ---- */
-.flash{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:28px 18px;text-align:center;
-  display:flex;flex-direction:column;gap:14px;align-items:center}
-.flash .big{font-size:clamp(28px,9vw,40px);font-weight:800;line-height:1.1;word-break:break-word;letter-spacing:-.02em}
-.flash .mid{font-size:20px;font-weight:700;color:var(--ink2)}
-.progressbar{height:4px;border-radius:2px;background:var(--line);overflow:hidden}
-.progressbar i{display:block;height:100%;background:var(--accent);transition:width .25s ease}
+/* ---- welcome ---- */
+.welcome .hero{padding:26px 0 4px;text-align:center}
+.apptitle{font-size:36px;font-weight:800;letter-spacing:-.03em;margin:0 0 4px;line-height:1.05}
+.person{justify-content:flex-start;padding:10px 12px;min-height:68px;font-size:18px}
+.avatar{flex:0 0 auto;width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--on-accent);
+  display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:19px}
 
-/* ---- tiles / chips games ---- */
+/* ---- flashcard / progress ---- */
+.flash{background:var(--surface);border-radius:22px;padding:30px 18px;text-align:center;
+  display:flex;flex-direction:column;gap:16px;align-items:center}
+.flash .big{font-size:clamp(30px,9vw,42px);font-weight:800;line-height:1.1;word-break:break-word;letter-spacing:-.02em}
+.flash .mid{font-size:22px;font-weight:700;color:var(--ink2)}
+.prow{display:flex;align-items:center;gap:10px}
+.pcount{font-size:14px;font-weight:800;color:var(--ink2);font-variant-numeric:tabular-nums}
+.progressbar{height:8px;border-radius:4px;background:var(--surface);overflow:hidden}
+.progressbar i{display:block;height:100%;background:var(--good);border-radius:4px;transition:width .25s ease}
+
+/* ---- games ---- */
+.btn.gtile{justify-content:flex-start;padding:14px 16px;min-height:76px;font-size:19px;gap:14px}
+.tile-ic{width:48px;height:48px;border-radius:14px;background:var(--accent-soft);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
 .slots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;min-height:54px}
-.slot{width:40px;height:50px;border-radius:10px;border:1px solid var(--line);background:var(--surface);
-  display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:22px;font-weight:700}
-.slot.filled{border-color:var(--accent);color:var(--ink)}
-.slot.ok{border-color:var(--good);background:var(--good-soft)}
-.slot.no{border-color:var(--bad);background:var(--bad-soft)}
+.slot{width:42px;height:52px;border-radius:12px;background:var(--surface);
+  display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:24px;font-weight:700}
+.slot.filled{background:var(--accent-soft)}
+.slot.ok{background:var(--good-soft);color:var(--good)}
+.slot.no{background:var(--bad-soft);color:var(--bad)}
 .tiles{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-.tile{width:46px;height:50px;min-height:50px;padding:0;font-family:var(--mono);font-size:22px;font-weight:700}
-.tile.used{visibility:hidden}
+.tiles .btn{width:48px;height:54px;min-height:54px;padding:0;font-family:var(--mono);font-size:24px;font-weight:700;justify-content:center}
+.tiles .btn.used{visibility:hidden}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
-.chips .btn{min-height:44px;padding:8px 14px;font-size:16px}
-.sentbox{min-height:62px;background:var(--surface2);border-radius:12px;padding:10px;
+.chips .btn{min-height:46px;padding:8px 14px;font-size:17px}
+.sentbox{min-height:64px;background:var(--surface);border-radius:14px;padding:10px;
   display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.sentbox .btn{background:var(--accent-soft)}
 .pairs{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.pair{min-height:64px;border-radius:12px;font-size:16px;font-weight:700;padding:8px;word-break:break-word;line-height:1.25}
-.pair.open{border-color:var(--accent);background:var(--accent-soft)}
-.pair.done{border-color:var(--good);color:var(--good);opacity:.6;pointer-events:none}
+.pair{min-height:68px;border-radius:14px;font-size:17px;font-weight:800;padding:8px;word-break:break-word;line-height:1.25}
+.pair.open{background:var(--accent-soft);color:var(--accent)}
+.pair.done{background:var(--good-soft);color:var(--good);opacity:.7;pointer-events:none}
 
 /* ---- quiz ---- */
-.qcard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px 18px;text-align:center;
+.qcard{background:var(--surface);border-radius:22px;padding:22px 18px;text-align:center;
   display:flex;flex-direction:column;gap:14px;align-items:center}
-.qword{font-size:clamp(24px,7vw,34px);font-weight:800;word-break:break-word;letter-spacing:-.02em}
+.qword{font-size:clamp(26px,7vw,36px);font-weight:800;word-break:break-word;letter-spacing:-.02em}
 .options{display:flex;flex-direction:column;gap:8px;width:100%}
-.options .btn{justify-content:flex-start;text-align:left;font-size:16px}
-.options .btn.right{border-color:var(--good);background:var(--good-soft);color:var(--good)}
-.options .btn.wrong{border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
-.verdict{font-size:17px;font-weight:800}
+.options .btn{justify-content:flex-start;text-align:left;font-size:17px;background:var(--surface2)}
+.options .btn.right{background:var(--good-soft);color:var(--good)}
+.options .btn.wrong{background:var(--bad-soft);color:var(--bad)}
+.verdict{font-size:18px;font-weight:800}
 .verdict.ok{color:var(--good)}
 .verdict.no{color:var(--bad)}
+.bigring{position:relative;display:inline-flex}
+.bigring-txt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:22px;font-variant-numeric:tabular-nums}
+.bigring-txt .bignum{font-size:34px}
+.bigring-txt .muted{font-size:13px}
 
 /* ---- awards ---- */
-.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
-.badge{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;
-  display:flex;gap:9px;align-items:flex-start}
-.badge .mark{flex:0 0 auto;width:18px;height:18px;border-radius:50%;border:1px solid var(--line);margin-top:1px}
-.badge .nm{font-size:13px;font-weight:700;color:var(--ink2);line-height:1.3}
-.badge.earned{border-color:var(--good)}
-.badge.earned .mark{border-color:var(--good);background:var(--good);position:relative}
-.badge.earned .mark::after{content:"";position:absolute;left:5px;top:3px;width:5px;height:9px;
-  border-right:2px solid var(--surface);border-bottom:2px solid var(--surface);transform:rotate(40deg)}
-.badge.earned .nm{color:var(--ink)}
+.statrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card.stat{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.card.stat .ico{color:var(--accent)}
 .bignum{font-size:32px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-.statrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.mastery{display:flex;flex-direction:column;gap:10px}
-.mastery .m{display:flex;align-items:center;gap:10px;font-size:15px}
-.mastery .m b{flex:0 0 100px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mastery .m .progressbar{flex:1 1 auto}
+.badges{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.badge{background:var(--surface);border-radius:14px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;color:var(--ink2);opacity:.55}
+.badge .nm{font-size:12px;font-weight:800;line-height:1.25}
+.badge.earned{opacity:1;background:var(--accent-soft);color:var(--accent)}
+.badge.earned .nm{color:var(--ink)}
+.rings{display:flex;flex-wrap:wrap;gap:8px}
+.rings .r{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border-radius:999px;padding:6px 12px 6px 6px;font-size:15px;font-weight:800}
 
-/* ---- action bar ---- */
-.action{flex:0 0 auto;padding:10px 16px;background:var(--surface);border-top:1px solid var(--line)}
+/* ---- action bar + tabs ---- */
+.action{flex:0 0 auto;padding:8px 16px 10px}
 .action:empty{display:none}
-
-/* ---- tab bar ---- */
-.tabbar{flex:0 0 auto;display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border-top:1px solid var(--line)}
-.tabbar button{appearance:none;border:0;background:none;padding:14px 2px;min-height:52px;cursor:pointer;
-  color:var(--ink2);font:inherit;font-size:13px;font-weight:700;border-top:2px solid transparent;margin-top:-1px}
-.tabbar button[aria-current="true"]{color:var(--accent);border-top-color:var(--accent)}
+.tabbar{flex:0 0 auto;display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border-radius:22px 22px 0 0;padding:6px 6px 8px}
+.tabbar button{appearance:none;border:0;background:none;padding:6px 2px 4px;min-height:56px;cursor:pointer;
+  color:var(--ink2);font:inherit;font-size:11px;font-weight:800;display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:14px}
+.tabbar button .ico{width:44px;height:30px;border-radius:12px;transition:background-color .12s ease}
+.tabbar button[aria-current="true"]{color:var(--accent)}
+.tabbar button[aria-current="true"] .ico{background:var(--accent-soft)}
 
 /* ---- toast ---- */
-#toast{position:fixed;left:50%;bottom:74px;transform:translateX(-50%);z-index:50;display:flex;flex-direction:column;
+#toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:50;display:flex;flex-direction:column;
   gap:8px;align-items:center;pointer-events:none;width:max-content;max-width:90vw}
-#toast .t{background:var(--ink);color:var(--bg);border-radius:10px;padding:9px 14px;font-weight:700;font-size:14px}
-.empty{text-align:center;padding:24px 8px;color:var(--ink2)}
+#toast .t{background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 16px;font-weight:800;font-size:15px}
+.empty{text-align:center;padding:20px 8px;color:var(--ink2);align-items:center;font-weight:700}
+.empty .ico{color:var(--accent)}
+.shake{animation:shake .3s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 
@@ -468,8 +480,47 @@ function spellOut(word){
     synth.speak(f);
   }catch(e){}
 }
+var ICONS = {
+  speaker:'<path d="M11 5 6 9H3v6h3l5 4V5Z" fill="currentColor" stroke="none"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 6a8 8 0 0 1 0 12"/>',
+  mic:'<rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor" stroke="none"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/>',
+  abc:'<text x="12" y="16.5" text-anchor="middle" font-size="12" font-weight="800" font-family="Nunito,sans-serif" fill="currentColor" stroke="none">Aa</text>',
+  pencil:'<path d="M3 21l3.6-.8L19 7.8 16.2 5 3.8 17.4z"/><path d="M14.4 6.8l2.8 2.8"/>',
+  trash:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+  close:'<path d="M6 6l12 12M18 6 6 18"/>',
+  back:'<path d="M15 5l-7 7 7 7"/>',
+  check:'<path d="m5 12 4.5 4.5L19 7"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  book:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/>',
+  cards:'<rect x="3" y="6" width="13" height="15" rx="2"/><path d="M8 3h11a2 2 0 0 1 2 2v12"/>',
+  game:'<rect x="2" y="7" width="20" height="11" rx="4"/><path d="M7 11v3M5.5 12.5h3"/><circle cx="16" cy="11.5" r="1" fill="currentColor"/><circle cx="18.5" cy="14" r="1" fill="currentColor"/>',
+  target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>',
+  medal:'<circle cx="12" cy="14" r="6"/><path d="M8.5 9 6 2h4l2 5 2-5h4l-2.5 7"/>',
+  star:'<path d="m12 3 2.7 5.6 6.1.8-4.4 4.3 1.1 6.1L12 17l-5.5 2.8 1.1-6.1L3.2 9.4l6.1-.8z"/>',
+  flame:'<path d="M12 3s5 4 5 9a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3 1-5.5 1-7.5z"/>',
+  letters:'<rect x="3" y="8" width="5" height="8" rx="1"/><rect x="9.5" y="8" width="5" height="8" rx="1"/><rect x="16" y="8" width="5" height="8" rx="1"/>',
+  puzzle:'<path d="M10 3h4v2.5a1.5 1.5 0 1 0 3 0V3h4v4h-2.5a1.5 1.5 0 1 0 0 3H21v4h-4v2.5a1.5 1.5 0 1 1-3 0V14h-4v4H6v-4H3.5a1.5 1.5 0 1 1 0-3H6V7h4z"/>',
+  pairs:'<rect x="3" y="4" width="8" height="10" rx="2"/><rect x="13" y="10" width="8" height="10" rx="2"/>',
+  play:'<path d="M7 4v16l13-8z" fill="currentColor"/>',
+  refresh:'<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 3v5h-5"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  seed:'<path d="M12 21V11"/><path d="M12 11c0-4 3-7 7-7 0 4-3 7-7 7z"/><path d="M12 15c0-3-2.5-5-5-5 0 3 2.5 5 5 5z"/>',
+  pen:'<path d="M12 20h9"/><path d="M16.5 3.5a2 2 0 0 1 3 3L8 18l-4 1 1-4z"/>',
+  trophy:'<path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 3M17 6h3a3 3 0 0 1-3 3"/><path d="M12 14v4M8 20h8"/>',
+  cap:'<path d="M2 9l10-4 10 4-10 4z"/><path d="M6 11v4c0 1.5 3 3 6 3s6-1.5 6-3v-4"/>'
+};
+function ico(name, size){
+  size = size || 22;
+  return h("span", { class:"ico", html:'<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (ICONS[name] || "") + '</svg>' });
+}
+function ring(value, max, size, stroke){
+  size = size || 34; stroke = stroke || 4;
+  var r = (size - stroke) / 2, c = 2 * Math.PI * r, frac = Math.max(0, Math.min(1, max ? value / max : 0));
+  return h("span", { class:"ring", html:'<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '" aria-hidden="true">'
+    + '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="var(--line)" stroke-width="' + stroke + '"/>'
+    + (frac > 0 ? '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="var(--good)" stroke-width="' + stroke + '" stroke-linecap="round" stroke-dasharray="' + (c*frac) + ' ' + c + '" transform="rotate(-90 ' + size/2 + ' ' + size/2 + ')"/>' : '') + '</svg>' });
+}
 function icoSpeaker(){
-  return h("span", { class:"ico", html:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5Z" fill="currentColor" stroke="none"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 6a8 8 0 0 1 0 12"/></svg>' });
+  return ico("speaker", 22);
 }
 function speakerBtn(text, lang, cls){
   if(!canSpeak()) return null;
@@ -480,14 +531,14 @@ function speakerBtn(text, lang, cls){
 
 /* ============== rewards ============== */
 var BADGES = [
-  { id:"own",   nm:"Своё слово",      hint:"Добавь слово сам",           test:function(s){ return s.words.some(function(w){ return !w.sample; }); } },
-  { id:"ten",   nm:"10 слов",          hint:"Собери 10 слов",             test:function(s){ return s.words.length >= 10; } },
+  { id:"own", ic:"seed",   nm:"Своё слово",      hint:"Добавь слово сам",           test:function(s){ return s.words.some(function(w){ return !w.sample; }); } },
+  { id:"ten", ic:"book",   nm:"10 слов",          hint:"Собери 10 слов",             test:function(s){ return s.words.length >= 10; } },
   { id:"writer",nm:"Своё предложение", hint:"Придумай предложение",       test:function(s){ return s.words.some(function(w){ return (w.sentences||[]).length > 0; }); } },
-  { id:"s25",   nm:"25 звёзд",         hint:"Собери 25 звёзд",            test:function(s){ return s.stats.stars >= 25; } },
-  { id:"s100",  nm:"100 звёзд",        hint:"Собери 100 звёзд",           test:function(s){ return s.stats.stars >= 100; } },
-  { id:"perf",  nm:"Тест без ошибок",  hint:"Пройди тест без ошибок",     test:function(s){ return s.stats.perfect >= 1; } },
-  { id:"str3",  nm:"3 дня подряд",     hint:"Занимайся 3 дня подряд",     test:function(s){ return s.stats.streak >= 3; } },
-  { id:"mast5", nm:"5 слов выучено",   hint:"Выучи 5 слов на 5 полосок",  test:function(s){ return s.words.filter(function(w){ return w.level >= 5; }).length >= 5; } }
+  { id:"s25", ic:"star",   nm:"25 звёзд",         hint:"Собери 25 звёзд",            test:function(s){ return s.stats.stars >= 25; } },
+  { id:"s100", ic:"star",  nm:"100 звёзд",        hint:"Собери 100 звёзд",           test:function(s){ return s.stats.stars >= 100; } },
+  { id:"perf", ic:"trophy",  nm:"Тест без ошибок",  hint:"Пройди тест без ошибок",     test:function(s){ return s.stats.perfect >= 1; } },
+  { id:"str3", ic:"flame",  nm:"3 дня подряд",     hint:"Занимайся 3 дня подряд",     test:function(s){ return s.stats.streak >= 3; } },
+  { id:"mast5", ic:"cap", nm:"5 слов выучено",   hint:"Выучи 5 слов",  test:function(s){ return s.words.filter(function(w){ return w.level >= 5; }).length >= 5; } }
 ];
 function touchDay(){
   var st = state.stats, t = today();
@@ -539,25 +590,32 @@ function otherWords(word, n, key){
   var pool = shuffle(state.words.filter(function(w){ return w.id !== word.id && norm(w[key]) !== norm(word[key]); }));
   return pool.slice(0, n);
 }
+function progressRow(done, total){
+  return h("div", { class:"prow" },
+    h("div", { class:"progressbar grow" }, h("i", { style:"width:" + Math.round(done/total*100) + "%" })),
+    h("span", { class:"pcount", text: done + "/" + total })
+  );
+}
 function levelDots(level){
   var kids = [];
   for(var i=0;i<5;i++) kids.push(h("i", { class: i < level ? "on" : "" }));
   return h("span", { class:"dots", "aria-label":"Выучено на " + level + " из 5" }, kids);
 }
 function needMore(min, what){
-  return h("div", { class:"empty" },
-    h("p", { text:"Чтобы " + what + ", нужно хотя бы " + min + " слов." }),
-    h("button", { class:"btn primary", type:"button", onclick:function(){ go("words"); } }, "Добавить слова")
+  return h("div", { class:"empty stack" },
+    ico("book", 44),
+    h("p", { text:"Нужно хотя бы " + min + " " + plural(min, "слово", "слова", "слов") }),
+    h("button", { class:"btn primary", type:"button", onclick:function(){ go("words"); } }, ico("plus"), "Добавить слова")
   );
 }
 
 /* ============== router ============== */
 var TABS = [
-  { id:"words",  nm:"Слова" },
-  { id:"learn",  nm:"Учить" },
-  { id:"play",   nm:"Игры" },
-  { id:"test",   nm:"Тест" },
-  { id:"awards", nm:"Награды" }
+  { id:"words",  nm:"Слова",   ic:"book" },
+  { id:"learn",  nm:"Учить",   ic:"cards" },
+  { id:"play",   nm:"Игры",    ic:"game" },
+  { id:"test",   nm:"Тест",    ic:"target" },
+  { id:"awards", nm:"Награды", ic:"medal" }
 ];
 var tab = "words";
 var view = {};
@@ -579,7 +637,7 @@ function render(){
     return;
   }
   tabbarEl.hidden = false;
-  who.hidden = false; who.textContent = profile.name; who.title = "Сменить ученика";
+  who.hidden = false; who.textContent = ""; who.appendChild(ico("user", 16)); who.appendChild(document.createTextNode(profile.name)); who.title = "Сменить ученика";
   document.getElementById("chip-stars").textContent = (state.stats.stars||0) + " ★";
   var streakChip = document.getElementById("chip-streak");
   streakChip.textContent = (state.stats.streak||0) + " дн.";
@@ -587,7 +645,7 @@ function render(){
   tabbarEl.textContent = "";
   TABS.forEach(function(t){
     tabbarEl.appendChild(h("button", { type:"button", "aria-current": tab === t.id ? "true" : "false",
-      onclick:function(){ go(t.id); } }, t.nm));
+      onclick:function(){ go(t.id); } }, ico(t.ic, 24), h("span", { text:t.nm })));
   });
   actionEl.textContent = "";
   if(tab === "words" && !view.form){
@@ -595,7 +653,7 @@ function render(){
       view.form = { en:"", ru:"", editId:null, err:"", added:[], micMsg:"", listening:null }; render();
       if(screenEl) screenEl.scrollTop = 0;
       var inp = document.getElementById("f-en"); if(inp) inp.focus();
-    } }, "Добавить слово"));
+    } }, ico("plus", 22), "Добавить слово"));
   }
   screenEl.textContent = "";
   var node = tab === "words" ? screenWords()
@@ -612,7 +670,7 @@ function screenWelcome(){
   var box = h("div", { class:"stack welcome" });
   box.appendChild(h("div", { class:"hero" },
     h("h1", { class:"apptitle", text:"Ракета слов" }),
-    h("p", { class:"sub", text:"Свой словарик английских слов: слушаем, пишем, играем и проверяем себя." })
+    h("p", { class:"sub", text:"Мой словарик английских слов" })
   ));
   if(profiles.length){
     box.appendChild(h("div", { class:"label", text:"Кто занимается?" }));
@@ -628,7 +686,7 @@ function screenWelcome(){
     box.appendChild(list);
   }
   if(!w.creating){
-    box.appendChild(h("button", { class:"btn ghost block", type:"button", onclick:function(){ w.creating = true; render(); } }, "Новый ученик"));
+    box.appendChild(h("button", { class:"btn block", type:"button", onclick:function(){ w.creating = true; render(); } }, ico("plus"), "Новый ученик"));
     return box;
   }
   function upd(k){ return function(ev){ w[k] = ev.target.value; }; }
@@ -646,16 +704,15 @@ function screenWelcome(){
     });
   }
   box.appendChild(h("div", { class:"card stack" },
-    h("div", { class:"label", text: profiles.length ? "Новый ученик" : "Давай познакомимся" }),
     h("label", { class:"field" }, "Как тебя зовут?",
       h("input", { type:"text", id:"p-name", value:w.name, placeholder:"Маша", autocapitalize:"words", oninput:upd("name") })),
     h("label", { class:"field" }, "Секретное слово",
       h("input", { type:"text", id:"p-secret", value:w.secret, placeholder:"зелёный дракон", autocapitalize:"off", oninput:upd("secret"),
         onkeydown:function(ev){ if(ev.key === "Enter") submit(); } })),
-    h("div", { class:"muted", text:"Секретное слово понадобится, чтобы открыть свой словарь на другом телефоне. Запомни его или запиши." }),
+    h("div", { class:"muted", text:"Нужно, чтобы открыть свой словарь на другом телефоне." }),
     w.err ? h("div", { class:"err", text:w.err }) : null,
     h("div", { class:"row" },
-      h("button", { class:"btn primary grow", type:"button", disabled: w.busy ? true : null, onclick:submit }, w.busy ? "Создаю…" : "Создать словарь"),
+      h("button", { class:"btn primary grow", type:"button", disabled: w.busy ? true : null, onclick:submit }, w.busy ? "Создаю…" : "Начать"),
       profiles.length ? h("button", { class:"btn ghost", type:"button", onclick:function(){ w.creating = false; render(); } }, "Отмена") : null
     )
   ));
@@ -671,20 +728,17 @@ function plural(n, one, few, many){
 /* ============== screen: Слова ============== */
 function screenWords(){
   var box = h("div", { class:"stack" });
-  var mine = state.words.filter(function(w){ return !w.sample; }).length;
-  box.appendChild(h("div", null,
-    h("h2", { class:"title", text:"Мои слова" }),
-    h("p", { class:"sub", text: state.words.length + " " + plural(state.words.length, "слово", "слова", "слов") + (mine !== state.words.length ? ", твоих: " + mine : "") })
-  ));
+  if(state.words.length) box.appendChild(h("div", { class:"muted", text: state.words.length + " " + plural(state.words.length, "слово", "слова", "слов") }));
 
   if(view.form) box.appendChild(view.form.editId ? wordForm() : quickForm());
 
   if(!state.words.length){
     box.appendChild(h("div", { class:"empty stack" },
-      h("p", { text:"Словарь пока пустой. Добавь первое слово из урока — или начни с примеров." }),
+      ico("seed", 44),
+      h("p", { text:"Пока пусто. Добавь первое слово!" }),
       h("button", { class:"btn ghost", type:"button", onclick:function(){
         state.words = sampleWords(); save(); render(); toast("Добавлено 8 слов для примера");
-      } }, "Добавить 8 слов для примера")));
+      } }, "Взять 8 слов для примера")));
     return box;
   }
 
@@ -736,7 +790,7 @@ function cleanSpoken(t, lang){
   return t;
 }
 function icoMic(){
-  return h("span", { class:"ico", html:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor" stroke="none"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>' });
+  return ico("mic", 22);
 }
 function micBtn(f, key){
   if(!canListen()) return null;
@@ -769,26 +823,23 @@ function quickForm(){
   var added = (f.added || []).map(function(id){ return state.words.filter(function(w){ return w.id === id; })[0]; }).filter(Boolean);
   return h("div", { class:"card stack quick" },
     h("div", { class:"row" },
-      h("div", { class:"label grow", text:"Новое слово" }),
-      h("button", { class:"btn ghost", type:"button", onclick:function(){ stopListening(); view.form = null; render(); } }, "Готово")
+      h("div", { class:"grow", style:"font-weight:800", text:"Новое слово" }),
+      h("button", { class:"btn ghost iconbtn", type:"button", "aria-label":"Закрыть", onclick:function(){ stopListening(); view.form = null; render(); } }, ico("close"))
     ),
     h("div", { class:"row" },
-      h("input", { type:"text", id:"f-en", class:"grow", value:f.en, placeholder:"a cat", autocapitalize:"off",
+      h("input", { type:"text", id:"f-en", class:"grow", value:f.en, placeholder:"слово, например a cat", autocapitalize:"off",
         autocorrect:"off", spellcheck:"false", "aria-label":"Слово по-английски", oninput:upd("en"), onkeydown:onEnter }),
       micBtn(f, "en")
     ),
     h("div", { class:"row" },
-      h("input", { type:"text", id:"f-ru", class:"grow", value:f.ru, placeholder:"кот", "aria-label":"Перевод",
+      h("input", { type:"text", id:"f-ru", class:"grow", value:f.ru, placeholder:"перевод", "aria-label":"Перевод",
         oninput:upd("ru"), onkeydown:onEnter }),
       micBtn(f, "ru")
     ),
     f.micMsg ? h("div", { class:"micmsg" + (f.listening ? " live" : ""), text:f.micMsg }) : null,
     f.err ? h("div", { class:"err", text:f.err }) : null,
-    h("button", { class:"btn primary block", type:"button", onclick:submitForm }, "Добавить"),
-    h("div", { class:"sub", style:"margin:0", text: canListen()
-      ? "Нажми микрофон и скажи слово, потом перевод. Артикль говори вместе со словом: a cat."
-      : "Артикль пиши вместе со словом: a cat, an apple." }),
-    added.length ? h("div", { class:"added" }, h("span", { class:"label", text:"Добавлено сейчас:" }),
+    h("button", { class:"btn primary block", type:"button", onclick:submitForm }, ico("plus"), "Добавить"),
+    added.length ? h("div", { class:"added" }, ico("check", 18),
       added.map(function(w){ return h("span", { class:"tag big", text:full(w) }); })) : null
   );
 }
@@ -798,8 +849,8 @@ function wordForm(){
   var f = view.form;
   function upd(key){ return function(ev){ f[key] = ev.target.value; }; }
   return h("div", { class:"card stack" },
-    h("div", { class:"label", text:"Изменить слово" }),
-    h("label", { class:"field" }, "Слово по-английски (с артиклем, если нужен)",
+    h("div", { style:"font-weight:800", text:"Изменить слово" }),
+    h("label", { class:"field" }, "Слово по-английски",
       h("input", { type:"text", id:"f-en", value:f.en, placeholder:"a cat", autocapitalize:"off",
         autocorrect:"off", spellcheck:"false", oninput:upd("en") })),
     h("label", { class:"field" }, "Перевод",
@@ -850,10 +901,9 @@ function wordRow(w){
       view.openId = open ? null : w.id; render();
     } },
       h("div", { class:"word-en" }, full(w), w.sample ? h("span", { class:"tag", text:"пример" }) : null),
-      h("div", { class:"word-ru", text:w.ru }),
-      levelDots(w.level||0)
+      h("div", { class:"word-ru", text:w.ru })
     ),
-    h("span", { text: open ? "▾" : "▸", style:"color:var(--ink2);font-weight:800" })
+    w.level >= 5 ? h("span", { class:"done-mark", "aria-label":"Выучено" }, ico("check", 18)) : ring(w.level||0, 5, 30, 4)
   );
   var row = h("div", { class:"word" + (w.level >= 5 ? " mastered" : "") }, head);
   if(!open) return row;
@@ -865,22 +915,21 @@ function wordRow(w){
       speakerBtn(w.ex, "en-US")
     ));
   }
-  var acts = h("div", { class:"row wrap" });
+  var acts = h("div", { class:"acts" });
   if(canSpeak()){
-    acts.appendChild(h("button", { class:"btn ghost", type:"button", onclick:function(){ spellOut(w.en); } }, "По буквам"));
+    acts.appendChild(h("button", { class:"btn act", type:"button", onclick:function(){ spellOut(w.en); } }, ico("abc"), h("span", { text:"По буквам" })));
   }
-  acts.appendChild(h("button", { class:"btn ghost", type:"button", onclick:function(){
+  acts.appendChild(h("button", { class:"btn act", type:"button", onclick:function(){
     view.form = { en:full(w), ru:w.ru, ex:w.ex, exRu:w.exRu, editId:w.id, err:"" };
     view.openId = null; render(); if(screenEl) screenEl.scrollTop = 0;
-  } }, "Изменить"));
-  acts.appendChild(h("button", { class:"btn ghost", type:"button", onclick:function(){
+  } }, ico("pencil"), h("span", { text:"Изменить" })));
+  acts.appendChild(h("button", { class:"btn act", type:"button", onclick:function(){
     if(!confirm("Удалить слово «" + w.en + "»?")) return;
     state.words = state.words.filter(function(x){ return x.id !== w.id; });
     view.openId = null; save(); render(); toast("Слово удалено");
-  } }, "Удалить"));
+  } }, ico("trash"), h("span", { text:"Удалить" })));
   body.appendChild(acts);
 
-  body.appendChild(h("div", { class:"label", text:"Мои предложения с этим словом" }));
   if((w.sentences||[]).length){
     var ul = h("ul", { class:"mine" });
     w.sentences.forEach(function(s, i){
@@ -889,12 +938,12 @@ function wordRow(w){
         speakerBtn(s, "en-US"),
         h("button", { class:"btn ghost small", type:"button", "aria-label":"Удалить предложение", onclick:function(){
           w.sentences.splice(i,1); save(); render();
-        } }, "✕")
+        } }, ico("close", 18))
       ));
     });
     body.appendChild(ul);
   }
-  var ta = h("textarea", { id:"s-" + w.id, placeholder:"Например: I have a grey cat.", autocapitalize:"sentences", spellcheck:"false" });
+  var ta = h("textarea", { id:"s-" + w.id, placeholder:"Моё предложение со словом " + w.en + "…", autocapitalize:"sentences", spellcheck:"false" });
   body.appendChild(ta);
   body.appendChild(h("button", { class:"btn good", type:"button", onclick:function(){
     var txt = ta.value.trim();
@@ -904,7 +953,7 @@ function wordRow(w){
     addStars(2); checkBadges(); save(); render();
     toast("Предложение сохранено. +2 звезды");
     speak(txt, "en-US", 0.8);
-  } }, "Сохранить предложение"));
+  } }, ico("pen"), "Сохранить предложение"));
   row.appendChild(body);
   return row;
 }
@@ -919,31 +968,27 @@ function screenLearn(){
   var box = h("div", { class:"stack" });
   if(view.i >= view.deck.length){
     box.appendChild(h("div", { class:"empty" },
-      h("h2", { class:"title", text:"Круг пройден!" }),
-      h("p", { text:"Ты посмотрел " + view.deck.length + " карточек." })
+      ico("check", 48),
+      h("h2", { class:"title", text:"Круг пройден!" })
     ));
     box.appendChild(h("button", { class:"btn primary block", type:"button", onclick:function(){
       view.deck = null; render();
-    } }, "Ещё раз"));
-    box.appendChild(h("button", { class:"btn ghost block", type:"button", onclick:function(){ go("test"); } }, "Проверить себя тестом"));
+    } }, ico("refresh"), "Ещё раз"));
+    box.appendChild(h("button", { class:"btn block", type:"button", onclick:function(){ go("test"); } }, ico("target"), "Тест"));
     return box;
   }
   var w = state.words.filter(function(x){ return x.id === view.deck[view.i]; })[0];
   if(!w){ view.i++; return screenLearn(); }
 
-  box.appendChild(h("div", null,
-    h("h2", { class:"title", text:"Карточки" }),
-    h("p", { class:"sub", text:"Карточка " + (view.i+1) + " из " + view.deck.length + " — сначала вспомни сам!" })
-  ));
-  box.appendChild(h("div", { class:"progressbar" }, h("i", { style:"width:" + Math.round(view.i/view.deck.length*100) + "%" })));
+  box.appendChild(progressRow(view.i, view.deck.length));
 
   var card;
   if(!view.flipped){
     card = h("div", { class:"flash" },
       h("div", { class:"big", text:full(w) }),
       h("div", { class:"row" },
-        canSpeak() ? h("button", { class:"btn warn", type:"button", onclick:function(){ speak(full(w), "en-US", 0.8); } }, "Послушать") : null,
-        canSpeak() ? h("button", { class:"btn ghost", type:"button", onclick:function(){ spellOut(w.en); } }, "По буквам") : null
+        canSpeak() ? h("button", { class:"btn", type:"button", onclick:function(){ speak(full(w), "en-US", 0.8); } }, ico("speaker"), "Послушать") : null,
+        canSpeak() ? h("button", { class:"btn", type:"button", onclick:function(){ spellOut(w.en); } }, ico("abc"), "По буквам") : null
       ),
       h("button", { class:"btn primary block", type:"button", onclick:function(){ view.flipped = true; render(); } }, "Показать перевод")
     );
@@ -952,7 +997,7 @@ function screenLearn(){
       h("div", { class:"big", text:full(w) }),
       h("div", { class:"mid", text:w.ru }),
       w.ex ? h("div", { class:"example" }, w.ex, w.exRu ? h("span", { class:"ru", text:w.exRu }) : null) : null,
-      levelDots(w.level||0)
+      ring(w.level||0, 5, 30, 4)
     );
   }
   box.appendChild(card);
@@ -973,28 +1018,27 @@ function screenLearn(){
 
 /* ============== screen: Игры ============== */
 var GAMES = [
-  { id:"spell", nm:"Собери слово",       sub:"Слушай и составь слово из букв" },
-  { id:"sent",  nm:"Составь предложение", sub:"Поставь слова в правильный порядок" },
-  { id:"match", nm:"Найди пару",          sub:"Слово и перевод — найди пары" }
+  { id:"spell", nm:"Собери слово",        ic:"letters" },
+  { id:"sent",  nm:"Составь предложение", ic:"puzzle" },
+  { id:"match", nm:"Найди пару",          ic:"pairs" }
 ];
 function screenPlay(){
   if(!view.game){
     var box = h("div", { class:"stack" });
-    box.appendChild(h("div", null,
-      h("h2", { class:"title", text:"Игры" }),
-      h("p", { class:"sub", text:"Выбери игру — за каждый правильный ответ — звезда" })
-    ));
     GAMES.forEach(function(g){
-      box.appendChild(h("button", { class:"btn block", type:"button", style:"justify-content:flex-start;text-align:left;padding:16px",
+      box.appendChild(h("button", { class:"btn gtile", type:"button",
         onclick:function(){ view.game = g.id; view.g = null; render(); } },
-        h("span", null, h("div", { text:g.nm }), h("div", { style:"font-weight:600;font-size:13px;color:var(--ink2)", text:g.sub }))
+        h("span", { class:"tile-ic" }, ico(g.ic, 30)), h("span", { text:g.nm })
       ));
     });
     return box;
   }
   var wrap = h("div", { class:"stack" });
-  wrap.appendChild(h("button", { class:"btn ghost", type:"button", style:"align-self:flex-start",
-    onclick:function(){ view.game = null; view.g = null; render(); } }, "← Другие игры"));
+  var gm = GAMES.filter(function(g){ return g.id === view.game; })[0];
+  wrap.appendChild(h("div", { class:"row" },
+    h("button", { class:"btn ghost iconbtn", type:"button", "aria-label":"К играм",
+      onclick:function(){ view.game = null; view.g = null; render(); } }, ico("back")),
+    ico(gm.ic, 22), h("span", { style:"font-weight:800", text:gm.nm })));
   wrap.appendChild(view.game === "spell" ? gameSpell() : view.game === "sent" ? gameSentence() : gameMatch());
   return wrap;
 }
@@ -1014,16 +1058,10 @@ function gameSpell(){
   if(!w2){ view.g = null; return gameSpell(); }
 
   var box = h("div", { class:"stack" });
-  box.appendChild(h("div", null,
-    h("h2", { class:"title", text:"Собери слово" }),
-    h("p", { class:"sub", text:"Как пишется это слово?" })
-  ));
-  box.appendChild(h("div", { class:"card stack" },
-    h("div", { class:"row" },
-      h("div", { class:"grow", style:"font-size:20px;font-weight:800", text:w2.ru }),
-      speakerBtn(full(w2), "en-US")
-    ),
-    canSpeak() ? h("button", { class:"btn ghost", type:"button", onclick:function(){ spellOut(w2.en); } }, "Подсказка: по буквам") : null
+  box.appendChild(h("div", { class:"card row" },
+    h("div", { class:"grow", style:"font-size:22px;font-weight:800", text:w2.ru }),
+    speakerBtn(full(w2), "en-US"),
+    canSpeak() ? h("button", { class:"btn speaker", type:"button", "aria-label":"Подсказка по буквам", onclick:function(){ spellOut(w2.en); } }, ico("abc")) : null
   ));
 
   var slots = h("div", { class:"slots" });
@@ -1085,11 +1123,7 @@ function gameSentence(){
   if(!w2){ view.g = null; return gameSentence(); }
 
   var box = h("div", { class:"stack" });
-  box.appendChild(h("div", null,
-    h("h2", { class:"title", text:"Составь предложение" }),
-    h("p", { class:"sub", text:"Нажимай слова по порядку. Слово урока: " + w2.en })
-  ));
-  if(w2.exRu) box.appendChild(h("div", { class:"hint", text:"По-русски: " + w2.exRu }));
+  if(w2.exRu) box.appendChild(h("div", { class:"hint", text:w2.exRu }));
 
   var sent = h("div", { class:"sentbox" + (g.status === "no" ? " shake" : "") });
   if(!g.picked.length) sent.appendChild(h("span", { style:"color:var(--ink2)", text:"Здесь появится предложение…" }));
@@ -1146,10 +1180,7 @@ function gameMatch(){
   }
   var g = view.g;
   var box = h("div", { class:"stack" });
-  box.appendChild(h("div", null,
-    h("h2", { class:"title", text:"Найди пару" }),
-    h("p", { class:"sub", text:"Найдено пар: " + g.found + " из 4" })
-  ));
+  box.appendChild(progressRow(g.found, 4));
   var grid = h("div", { class:"pairs" });
   g.cards.forEach(function(c){
     grid.appendChild(h("button", { class:"btn pair" + (c.done ? " done" : c.open ? " open" : ""), type:"button",
@@ -1174,7 +1205,7 @@ function gameMatch(){
   });
   box.appendChild(grid);
   if(g.found === 4){
-    box.appendChild(h("div", { class:"verdict ok", text:"Готово! Попыток: " + g.tries }));
+    box.appendChild(h("div", { class:"verdict ok", text:"Все пары найдены" }));
     box.appendChild(h("button", { class:"btn primary block", type:"button", onclick:function(){ view.g = null; render(); } }, "Новые пары →"));
   }
   return box;
@@ -1209,18 +1240,13 @@ function screenTest(){
   if(state.words.length < 4) return needMore(4, "пройти тест");
   if(!view.quiz){
     var box = h("div", { class:"stack" });
-    box.appendChild(h("div", null,
-      h("h2", { class:"title", text:"Тест" }),
-      h("p", { class:"sub", text:"Вопросы по новым и по старым словам. Слова, которые ты знаешь хуже, попадаются чаще." })
+    var nq = Math.min(10, state.words.length);
+    box.appendChild(h("div", { class:"card stack center" },
+      ico("target", 56),
+      h("div", { class:"bignum", text:String(nq) }),
+      h("div", { class:"muted", text: plural(nq, "вопрос", "вопроса", "вопросов") }),
+      h("button", { class:"btn primary block", type:"button", onclick:function(){ view.quiz = buildQuiz(); render(); } }, ico("play"), "Начать")
     ));
-    box.appendChild(h("div", { class:"card stack" },
-      h("div", { class:"row" },
-        h("div", { class:"grow" },
-          h("div", { style:"font-weight:800", text:"Вопросов: " + Math.min(10, state.words.length) }),
-          h("div", { style:"font-size:13px;color:var(--ink2)", text:"Перевод, слово на слух и письмо" }))),
-      h("button", { class:"btn primary block", type:"button", onclick:function(){ view.quiz = buildQuiz(); render(); } }, "Начать тест")
-    ));
-    if(state.stats.tests) box.appendChild(h("p", { class:"sub", text:"Пройдено тестов: " + state.stats.tests + ", без ошибок: " + (state.stats.perfect||0) }));
     return box;
   }
   var q = view.quiz;
@@ -1231,25 +1257,24 @@ function screenTest(){
   if(!w){ q.i++; if(q.i >= q.qs.length) q.finished = true; return screenTest(); }
 
   var box = h("div", { class:"stack" });
-  box.appendChild(h("p", { class:"sub", text:"Вопрос " + (q.i+1) + " из " + q.qs.length + " · правильных: " + q.correct }));
-  box.appendChild(h("div", { class:"progressbar" }, h("i", { style:"width:" + Math.round(q.i/q.qs.length*100) + "%" })));
+  box.appendChild(progressRow(q.i, q.qs.length));
 
   var card = h("div", { class:"qcard" });
   if(cur.type === "enru"){
-    card.appendChild(h("div", { class:"label", text:"Что значит это слово?" }));
+    card.appendChild(h("div", { class:"label", text:"Что это значит?" }));
     card.appendChild(h("div", { class:"qword", text:full(w) }));
     var sb = speakerBtn(full(w), "en-US"); if(sb) card.appendChild(sb);
   }else if(cur.type === "ruen"){
-    card.appendChild(h("div", { class:"label", text:"Как это по-английски?" }));
+    card.appendChild(h("div", { class:"label", text:"Как по-английски?" }));
     card.appendChild(h("div", { class:"qword", text:w.ru }));
   }else if(cur.type === "audio"){
-    card.appendChild(h("div", { class:"label", text:"Послушай и выбери слово" }));
+    card.appendChild(h("div", { class:"label", text:"Послушай и выбери" }));
     card.appendChild(h("button", { class:"btn primary", type:"button", style:"padding:14px 26px",
-      onclick:function(){ speak(full(w), "en-US", 0.75); } }, "Послушать"));
+      onclick:function(){ speak(full(w), "en-US", 0.75); } }, ico("speaker", 26), "Послушать"));
   }else{
-    card.appendChild(h("div", { class:"label", text: w.art ? "Напиши это слово по-английски (лучше с артиклем " + w.art + ")" : "Напиши это слово по-английски" }));
+    card.appendChild(h("div", { class:"label", text:"Напиши по-английски" }));
     card.appendChild(h("div", { class:"qword", text:w.ru }));
-    if(canSpeak()) card.appendChild(h("button", { class:"btn ghost", type:"button", onclick:function(){ speak(full(w), "en-US", 0.75); } }, "Послушать подсказку"));
+    if(canSpeak()) card.appendChild(h("button", { class:"btn", type:"button", onclick:function(){ speak(full(w), "en-US", 0.75); } }, ico("speaker"), "Подсказка"));
   }
 
   if(cur.type === "type"){
@@ -1313,13 +1338,13 @@ function answerQuiz(value, w, cur){
 function testResult(q){
   var box = h("div", { class:"stack" });
   var perfect = q.correct === q.qs.length;
-  box.appendChild(h("div", { class:"card stack", style:"text-align:center;align-items:center" },
-    h("h2", { class:"title", text: perfect ? "Ни одной ошибки!" : "Тест пройден" }),
-    h("div", { class:"bignum", text: q.correct + " / " + q.qs.length }),
-    h("p", { class:"sub", text: perfect ? "За идеальный тест +5 звёзд!" : "За каждый правильный ответ — звезда." })
+  box.appendChild(h("div", { class:"card stack center" },
+    h("div", { class:"bigring" }, ring(q.correct, q.qs.length, 120, 10), h("div", { class:"bigring-txt", text: q.correct + "/" + q.qs.length })),
+    h("h2", { class:"title", text: perfect ? "Ни одной ошибки!" : "Молодец!" }),
+    h("div", { class:"row", style:"color:var(--ink2);font-weight:800" }, ico("star", 20), h("span", { text:"+" + (q.correct + (perfect ? 5 : 0)) }))
   ));
   if(q.wrong.length){
-    box.appendChild(h("div", { class:"label", text:"Стоит повторить" }));
+    box.appendChild(h("div", { class:"muted", text:"Повторить:" }));
     var list = h("div", { class:"wordlist" });
     q.wrong.forEach(function(id){
       var w = state.words.filter(function(x){ return x.id === id; })[0];
@@ -1330,51 +1355,38 @@ function testResult(q){
     });
     box.appendChild(list);
   }
-  box.appendChild(h("button", { class:"btn primary block", type:"button", onclick:function(){ view.quiz = null; render(); } }, "Ещё тест"));
-  box.appendChild(h("button", { class:"btn ghost block", type:"button", onclick:function(){ go("learn"); } }, "Повторить карточки"));
+  box.appendChild(h("button", { class:"btn primary block", type:"button", onclick:function(){ view.quiz = null; render(); } }, ico("refresh"), "Ещё тест"));
+  box.appendChild(h("button", { class:"btn block", type:"button", onclick:function(){ go("learn"); } }, ico("cards"), "Карточки"));
   return box;
 }
 
 /* ============== screen: Награды ============== */
 function screenAwards(){
   var box = h("div", { class:"stack" });
-  var learned = state.words.filter(function(w){ return w.level >= 5; }).length;
-  box.appendChild(h("div", null,
-    h("h2", { class:"title", text:"Мои награды" }),
-    h("p", { class:"sub", text:"Собирай звёзды, занимайся каждый день и открывай медали." })
+  var total = state.words.length, learned = state.words.filter(function(w){ return w.level >= 5; }).length;
+  box.appendChild(h("div", { class:"card stack center" },
+    h("div", { class:"bigring" }, ring(learned, total || 1, 132, 12),
+      h("div", { class:"bigring-txt" }, h("div", { class:"bignum", text:String(learned) }), h("div", { class:"muted", text:"из " + total }))),
+    h("div", { class:"muted", text:"слов выучено" })
   ));
   box.appendChild(h("div", { class:"statrow" },
-    h("div", { class:"card", style:"text-align:center" },
-      h("div", { class:"bignum", text:String(state.stats.stars||0) }), h("div", { class:"label", text:"звёзд" })),
-    h("div", { class:"card", style:"text-align:center" },
-      h("div", { class:"bignum", text:String(state.stats.streak||0) }), h("div", { class:"label", text:"дней подряд" }))
-  ));
-  box.appendChild(h("div", { class:"statrow" },
-    h("div", { class:"card", style:"text-align:center" },
-      h("div", { class:"bignum", text:String(state.words.length) }), h("div", { class:"label", text:"слов в копилке" })),
-    h("div", { class:"card", style:"text-align:center" },
-      h("div", { class:"bignum", text:String(learned) }), h("div", { class:"label", text:"выучено" }))
+    h("div", { class:"card stat" }, ico("star", 28), h("div", { class:"bignum", text:String(state.stats.stars||0) }), h("div", { class:"muted", text:plural(state.stats.stars||0, "звезда", "звезды", "звёзд") })),
+    h("div", { class:"card stat" }, ico("flame", 28), h("div", { class:"bignum", text:String(state.stats.streak||0) }), h("div", { class:"muted", text:plural(state.stats.streak||0, "день подряд", "дня подряд", "дней подряд") }))
   ));
 
-  box.appendChild(h("div", { class:"label", text:"Медали" }));
   var grid = h("div", { class:"badges" });
   var earned = state.stats.badges || [];
   BADGES.forEach(function(b){
     var got = earned.indexOf(b.id) !== -1 || b.test(state);
     grid.appendChild(h("div", { class:"badge" + (got ? " earned" : ""), title: got ? b.nm : b.hint },
-      h("span", { class:"mark" }), h("div", { class:"nm", text: got ? b.nm : b.hint })));
+      ico(b.ic, 28), h("div", { class:"nm", text: got ? b.nm : b.hint })));
   });
   box.appendChild(grid);
 
-  if(state.words.length){
-    box.appendChild(h("div", { class:"label", text:"Как я знаю слова" }));
-    var m = h("div", { class:"mastery" });
+  if(total){
+    var m = h("div", { class:"rings" });
     state.words.slice().sort(function(a,b){ return (b.level||0) - (a.level||0); }).forEach(function(w){
-      m.appendChild(h("div", { class:"m" },
-        h("b", { text:full(w) }),
-        h("div", { class:"progressbar" }, h("i", { style:"width:" + ((w.level||0)/5*100) + "%" })),
-        h("span", { style:"font-size:13px;color:var(--ink2);min-width:30px;text-align:right", text:(w.level||0) + "/5" })
-      ));
+      m.appendChild(h("div", { class:"r" }, ring(w.level||0, 5, 30, 4), h("span", { text:full(w) })));
     });
     box.appendChild(m);
   }
