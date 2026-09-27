@@ -1035,7 +1035,7 @@ function startPhoto(file){
     if(m.status === "recognizing text") ocrOverlay("Читаю страницу…", 0.35 + p * 0.65);
     else ocrOverlay("Готовлюсь читать… (в первый раз чуть дольше)", 0.05 + p * 0.3);
   };
-  Promise.all([prepImage(file), getOcrWorker()]).then(function(r){
+  Promise.all([prepImage(file), getOcrWorker(), loadBigDict()]).then(function(r){
     if(run !== ocrRun) return null;
     return r[1].recognize(r[0]);
   }).then(function(out){
@@ -1068,6 +1068,20 @@ function dictExact(w){
   if(!DICT){ DICT = {}; DICT_RAW.split("|").forEach(function(p){ var i = p.indexOf(":"); if(i > 0 && !DICT[p.slice(0, i).toLowerCase()]) DICT[p.slice(0, i).toLowerCase()] = p.slice(i + 1); }); }
   return DICT[w] || "";
 }
+/* большой словарь (~45 тыс. слов, Викисловарь через WikDict) — отдельный файл, грузится по требованию */
+var BIG = null, bigLoading = null;
+function loadBigDict(){
+  if(BIG) return Promise.resolve(BIG);
+  if(bigLoading) return bigLoading;
+  if(!window.fetch) return Promise.resolve(null);
+  bigLoading = fetch("dict-en-ru.txt").then(function(r){ if(!r.ok) throw new Error("dict"); return r.text(); }).then(function(t){
+    var m = Object.create(null), lines = t.split("\n");
+    for(var i = 0; i < lines.length; i++){ var j = lines[i].indexOf("\t"); if(j > 0) m[lines[i].slice(0, j)] = lines[i].slice(j + 1); }
+    BIG = m; return m;
+  }).catch(function(){ bigLoading = null; return null; });
+  return bigLoading;
+}
+function bigExact(w){ return BIG && BIG[w] || ""; }
 var EN_IRREG = { children:"child", men:"man", women:"woman", feet:"foot", teeth:"tooth", mice:"mouse", geese:"goose", people:"person" };
 // английское множественное -> возможные формы единственного
 function enSingulars(w){
@@ -1123,8 +1137,11 @@ function dictRu(en){
   if(!w) return "";
   var hit = dictExact(w) || dictExact(k.toLowerCase()) || (sp.en === "I" ? dictExact("i") : "");
   if(hit) return hit;
-  var sg = enSingulars(w);
-  for(var i = 0; i < sg.length; i++){ var t = dictExact(sg[i]); if(t) return EN_IRREG[w] && RU_PL_IRREG[t] ? RU_PL_IRREG[t] : ruPlural(t); }
+  var sg = enSingulars(w), i, t;
+  for(i = 0; i < sg.length; i++){ t = dictExact(sg[i]); if(t) return EN_IRREG[w] && RU_PL_IRREG[t] ? RU_PL_IRREG[t] : ruPlural(t); }
+  hit = bigExact(w) || bigExact(k.toLowerCase());
+  if(hit) return hit;
+  for(i = 0; i < sg.length; i++){ t = bigExact(sg[i]); if(t) return ruPlural(t); }
   return "";
 }
 function within1(a, b){
@@ -1158,6 +1175,13 @@ function dictFix(en){
     for(var f = 0; f < forms.length; f++){
       var fk = forms[f];
       if(fk.length >= 4 && (within1(w, fk) || swapped(w, fk))){ if(hit !== fk){ hit = fk; if(++n > 1) return ""; } break; }
+    }
+  }
+  if(!hit && BIG && w.length >= 5){
+    n = 0;
+    for(var bk in BIG){
+      if(Math.abs(bk.length - w.length) > 1 || bk.indexOf(" ") !== -1) continue;
+      if(within1(w, bk) || swapped(w, bk)){ hit = bk; if(++n > 1) return ""; }
     }
   }
   return hit ? (sp.art ? sp.art + " " : "") + hit : "";
@@ -1349,6 +1373,7 @@ function addFromPhoto(){
 /* --- quick add (several in a row) --- */
 function quickForm(){
   var f = view.form;
+  if(!BIG) loadBigDict();
   function upd(key){ return function(ev){ f[key] = ev.target.value; }; }
   function onEnter(ev){ if(ev.key === "Enter"){ ev.preventDefault(); submitForm(); } }
   var added = (f.added || []).map(function(id){ return state.words.filter(function(w){ return w.id === id; })[0]; }).filter(Boolean);
@@ -1385,6 +1410,7 @@ function quickForm(){
 /* --- edit form --- */
 function wordForm(){
   var f = view.form;
+  if(!BIG) loadBigDict();
   function upd(key){ return function(ev){ f[key] = ev.target.value; }; }
   return h("div", { class:"card stack" },
     h("div", { style:"font-weight:800", text:"Изменить слово" }),

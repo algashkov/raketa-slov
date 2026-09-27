@@ -5,3 +5,4 @@
 - `src/app.html` — исходник страницы (публикуется также как артефакт claude.ai).
 - `./build.sh` — собирает `index.html` для GitHub Pages.
 - `img/` — вязаные иллюстрации (webp, прозрачный фон): маскот-ракета, аватары учеников, экраны игр и теста.
+- `dict-en-ru.txt` — большой англо-русский словарь (~45 тыс. слов). Собран скриптом `tools/build_dict.py` из [WikDict](https://www.wikdict.com/) en-ru (данные Викисловаря, CC BY-SA 3.0); порядок переводов уточнён по частотному словарю [MUSE](https://github.com/facebookresearch/MUSE) (CC BY-NC 4.0). Ручной словарик в `src/app.html` имеет приоритет.
