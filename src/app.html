@@ -238,6 +238,19 @@ input::placeholder,textarea::placeholder{color:var(--ink2);opacity:.65;font-weig
 .countdown i{display:block;height:100%;background:var(--accent);border-radius:3px;animation:countdown linear both}
 @keyframes countdown{from{width:100%}to{width:0}}
 
+/* ---- photo import ---- */
+.btn.camera{width:60px;min-width:60px;padding:0;background:var(--accent-soft);color:var(--accent)}
+.ocritem{display:flex;align-items:center;gap:8px;background:var(--surface);border-radius:16px;padding:8px;opacity:.6;transition:opacity .15s ease}
+.ocritem.on{opacity:1}
+.ocrcheck{appearance:none;border:0;width:40px;height:40px;border-radius:50%;background:var(--surface2);color:var(--ink2);
+  display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;cursor:pointer}
+.ocritem.on .ocrcheck{background:var(--good);color:#fff}
+.ocrfields{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:6px}
+.ocrfields input{min-height:42px;padding:8px 10px;font-size:16px}
+.ocrfields input:first-child{font-weight:800}
+.ocritem .speaker{width:42px;height:42px;min-height:42px}
+.ocrbar i{animation:none;transition:width .3s ease}
+
 /* ---- toast ---- */
 #toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:50;display:flex;flex-direction:column;
   gap:8px;align-items:center;pointer-events:none;width:max-content;max-width:90vw}
@@ -262,6 +275,8 @@ input::placeholder,textarea::placeholder{color:var(--ink2);opacity:.65;font-weig
   <nav class="tabbar" id="tabbar" aria-label="Разделы"></nav>
 </div>
 <div id="listen" class="listen-overlay" hidden></div>
+<div id="ocr" class="listen-overlay" hidden></div>
+<input type="file" id="photo-input" accept="image/*" hidden>
 <div id="toast"></div>
 
 <script>
@@ -550,7 +565,9 @@ var ICONS = {
   cap:'<path d="M2 9l10-4 10 4-10 4z"/><path d="M6 11v4c0 1.5 3 3 6 3s6-1.5 6-3v-4"/>',
   cloud:'<path d="M7 18a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 8.5 3.5 3.5 0 0 1 17.5 18z"/>',
   phone:'<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>',
-  dots:'<circle cx="6" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="18" cy="12" r="1.5" fill="currentColor"/>'
+  dots:'<circle cx="6" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="18" cy="12" r="1.5" fill="currentColor"/>',
+  camera:'<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/>',
+  circle:'<circle cx="12" cy="12" r="8"/>'
 };
 function ico(name, size){
   size = size || 22;
@@ -677,7 +694,7 @@ var tab = "words";
 var view = {};
 var screenEl, tabbarEl;
 
-function go(t){ stopListening(); tab = t; view = {}; render(); if(screenEl) screenEl.scrollTop = 0; }
+function go(t){ stopListening(); stopOcr(); tab = t; view = {}; render(); if(screenEl) screenEl.scrollTop = 0; }
 
 function renderListen(){
   var ov = document.getElementById("listen");
@@ -725,12 +742,15 @@ function render(){
       onclick:function(){ go(t.id); } }, ico(t.ic, 24), h("span", { text:t.nm })));
   });
   actionEl.textContent = "";
-  if(tab === "words" && !view.form){
-    actionEl.appendChild(h("button", { class:"btn primary block", type:"button", onclick:function(){
-      view.form = { en:"", ru:"", editId:null, err:"", added:[], micMsg:"", listening:null }; render();
-      if(screenEl) screenEl.scrollTop = 0;
-      var inp = document.getElementById("f-en"); if(inp) inp.focus();
-    } }, ico("plus", 22), "Добавить слово"));
+  if(tab === "words" && !view.form && !view.photo){
+    actionEl.appendChild(h("div", { class:"row" },
+      h("button", { class:"btn primary grow", type:"button", onclick:function(){
+        view.form = { en:"", ru:"", editId:null, err:"", added:[], micMsg:"", listening:null }; render();
+        if(screenEl) screenEl.scrollTop = 0;
+        var inp = document.getElementById("f-en"); if(inp) inp.focus();
+      } }, ico("plus", 22), "Добавить слово"),
+      canOcr() ? h("button", { class:"btn camera", type:"button", "aria-label":"Слова с фото учебника", onclick:pickPhoto }, ico("camera", 26)) : null
+    ));
   }
   screenEl.textContent = "";
   var node = tab === "words" ? screenWords()
@@ -815,6 +835,7 @@ function plural(n, one, few, many){
 
 /* ============== screen: Слова ============== */
 function screenWords(){
+  if(view.photo && view.photo.stage === "review") return photoReview();
   var box = h("div", { class:"stack" });
   if(state.words.length) box.appendChild(h("div", { class:"muted", text: state.words.length + " " + plural(state.words.length, "слово", "слова", "слов") }));
 
@@ -824,6 +845,7 @@ function screenWords(){
     box.appendChild(h("div", { class:"empty stack" },
       illo("empty-words", 180, "pop"),
       h("p", { text:"Пока пусто. Добавь первое слово!" }),
+      canOcr() ? h("button", { class:"btn", type:"button", onclick:pickPhoto }, ico("camera"), "Слова с фото учебника") : null,
       h("button", { class:"btn ghost", type:"button", onclick:function(){
         state.words = sampleWords(); save(); render(); toast("Добавлено 8 слов для примера");
       } }, "Взять 8 слов для примера")));
@@ -914,6 +936,280 @@ function startVoice(f, key){
     render();
     if(ok && key === "en" && !f.ru){ setTimeout(function(){ if(view.form === f && !f.listening && !recog) startVoice(f, "ru"); }, 700); }
   });
+}
+
+/* --- words from a textbook photo (Tesseract, on device) --- */
+var TESS_SRC = "https://cdn.jsdelivr.net/npm/tesseract.js@6.0.1/dist/tesseract.min.js";
+var tessLoading = null, ocrWorker = null, ocrLog = null, ocrRun = 0;
+// в окне claude.ai политика безопасности не пускает загрузку распознавателя
+function canOcr(){ return !(window.claude && typeof window.claude.use === "function") && !!window.Worker && !!window.WebAssembly; }
+function loadTesseract(){
+  if(window.Tesseract) return Promise.resolve(window.Tesseract);
+  if(tessLoading) return tessLoading;
+  tessLoading = new Promise(function(res, rej){
+    var sc = document.createElement("script");
+    sc.src = TESS_SRC; sc.async = true;
+    sc.onload = function(){ window.Tesseract ? res(window.Tesseract) : rej(new Error("no-tesseract")); };
+    sc.onerror = function(){ tessLoading = null; rej(new Error("load")); };
+    document.head.appendChild(sc);
+  });
+  return tessLoading;
+}
+function getOcrWorker(){
+  if(ocrWorker) return ocrWorker;
+  ocrWorker = loadTesseract().then(function(T){
+    return T.createWorker(["eng", "rus"], 1, { logger:function(m){ if(ocrLog) ocrLog(m); } });
+  });
+  ocrWorker.catch(function(){ ocrWorker = null; });
+  return ocrWorker;
+}
+function stopOcr(){
+  ocrRun++;
+  var w = ocrWorker; ocrWorker = null;
+  if(w) w.then(function(x){ try{ x.terminate(); }catch(e){} }, function(){});
+  var ov = document.getElementById("ocr"); if(ov){ ov.hidden = true; ov.textContent = ""; }
+}
+function pickPhoto(){
+  var inp = document.getElementById("photo-input");
+  inp.value = "";
+  inp.click();
+}
+function prepImage(file){
+  return new Promise(function(res, rej){
+    var url = URL.createObjectURL(file), img = new Image();
+    img.onload = function(){
+      var max = 2000, k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      var c = document.createElement("canvas");
+      c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+      var ctx = c.getContext("2d");
+      ctx.drawImage(img, 0, 0, c.width, c.height);
+      try{
+        var d = ctx.getImageData(0, 0, c.width, c.height), px = d.data;
+        for(var i = 0; i < px.length; i += 4){
+          var g = 0.299*px[i] + 0.587*px[i+1] + 0.114*px[i+2];
+          g = (g - 128) * 1.35 + 128;
+          g = g < 0 ? 0 : g > 255 ? 255 : g;
+          px[i] = px[i+1] = px[i+2] = g;
+        }
+        ctx.putImageData(d, 0, 0);
+      }catch(e){}
+      URL.revokeObjectURL(url);
+      res(c);
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); rej(new Error("image")); };
+    img.src = url;
+  });
+}
+function ocrOverlay(title, frac){
+  var ov = document.getElementById("ocr");
+  var bar = ov.querySelector(".ocrbar i");
+  var ttl = ov.querySelector(".listen-title");
+  if(!bar){
+    ov.textContent = "";
+    ov.appendChild(h("div", { class:"listen-box" },
+      illo("cards", 200, "listen"),
+      h("div", { class:"listen-title", text:title }),
+      h("div", { class:"countdown ocrbar" }, h("i", { style:"width:0%" })),
+      h("button", { class:"btn block", type:"button", onclick:function(){ stopOcr(); view.photo = null; render(); } }, "Отмена")
+    ));
+    ov.hidden = false;
+    bar = ov.querySelector(".ocrbar i"); ttl = ov.querySelector(".listen-title");
+  }
+  if(ttl.textContent !== title) ttl.textContent = title;
+  bar.style.width = Math.round(Math.max(0, Math.min(1, frac)) * 100) + "%";
+}
+function startPhoto(file){
+  if(!file) return;
+  stopListening();
+  var run = ++ocrRun;
+  var keep = view.photo && view.photo.items ? view.photo.items : [];
+  view.form = null;
+  view.photo = { stage:"reading", items:keep };
+  render();
+  ocrOverlay("Готовлюсь читать… (в первый раз чуть дольше)", 0.02);
+  ocrLog = function(m){
+    if(run !== ocrRun || !m) return;
+    var p = typeof m.progress === "number" ? m.progress : 0;
+    if(m.status === "recognizing text") ocrOverlay("Читаю страницу…", 0.35 + p * 0.65);
+    else ocrOverlay("Готовлюсь читать… (в первый раз чуть дольше)", 0.05 + p * 0.3);
+  };
+  Promise.all([prepImage(file), getOcrWorker()]).then(function(r){
+    if(run !== ocrRun) return null;
+    return r[1].recognize(r[0]);
+  }).then(function(out){
+    if(run !== ocrRun || !out) return;
+    var found = parseOcr((out.data && out.data.text) || "");
+    var have = {};
+    keep.forEach(function(it){ have[norm(it.en)] = true; });
+    found.forEach(function(it){ if(!have[norm(it.en)]){ have[norm(it.en)] = true; keep.push(it); } });
+    document.getElementById("ocr").hidden = true;
+    document.getElementById("ocr").textContent = "";
+    view.photo = { stage:"review", items:keep, found:found.length };
+    render();
+    if(screenEl) screenEl.scrollTop = 0;
+  }).catch(function(err){
+    if(run !== ocrRun) return;
+    document.getElementById("ocr").hidden = true;
+    document.getElementById("ocr").textContent = "";
+    view.photo = keep.length ? { stage:"review", items:keep, found:0 } : null;
+    render();
+    toast(err && err.message === "image" ? "Не получилось открыть фото." : "Не получилось прочитать. Проверь интернет и попробуй ещё раз.");
+  });
+}
+
+var LOOK_L2C = { a:"а", o:"о", e:"е", c:"с", p:"р", x:"х", y:"у", k:"к", m:"м", A:"А", O:"О", E:"Е", C:"С", P:"Р", X:"Х", Y:"У", K:"К", M:"М", T:"Т", H:"Н", B:"В" };
+var LOOK_C2L = {};
+(function(){ for(var k in LOOK_L2C) if(!LOOK_C2L[LOOK_L2C[k]]) LOOK_C2L[LOOK_L2C[k]] = k; LOOK_C2L["у"] = "y"; LOOK_C2L["н"] = "h"; LOOK_C2L["в"] = "b"; LOOK_C2L["т"] = "t"; })();
+var OCR_HEAD = { unit:1, lesson:1, page:1, exercise:1, ex:1, module:1, step:1, part:1, task:1 };
+var OCR_SKIP = { listen:1, repeat:1, read:1, say:1, look:1, write:1, match:1, unit:1, lesson:1, page:1, ex:1, exercise:1, and:1, sing:1, play:1, point:1, the:1, answer:1, ask:1, find:1, draw:1, colour:1, color:1, circle:1, tick:1, words:1, word:1, new:1 };
+function scriptOf(word){
+  var l = 0, c = 0;
+  for(var i = 0; i < word.length; i++){
+    var ch = word.charAt(i);
+    if(/[A-Za-z]/.test(ch)) l += LOOK_L2C[ch] ? 0.5 : 1;
+    else if(/[А-Яа-яЁё]/.test(ch)) c += LOOK_C2L[ch] ? 0.5 : 1;
+  }
+  return l > c ? "en" : c > l ? "ru" : (l ? "?" : "");
+}
+function toLatin(w){ return w.replace(/[А-Яа-яЁё]/g, function(ch){ return LOOK_C2L[ch] || ""; }); }
+function toCyr(w){ return w.replace(/[A-Za-z]/g, function(ch){ return LOOK_L2C[ch] || ""; }); }
+function cleanEnPart(s){
+  s = s.replace(/[^A-Za-z' \-]/g, " ").replace(/\s+/g, " ").replace(/^[\s'\-]+|[\s'\-]+$/g, "");
+  if(!s) return "";
+  var ws = s.split(" ");
+  if(ws.length > 3) return "";
+  if(ws.some(function(w){ return w.length > 18; })) return "";
+  var sp = splitArticle(s);
+  var core = sp.en.split(" ");
+  if(core.some(function(w){ return w.replace(/['\-]/g, "").length < 2 && w !== "I"; }) && core.join("").length < 3) return "";
+  if(core.every(function(w){ return OCR_SKIP[w.toLowerCase()]; })) return "";
+  if(ws.some(function(w){ return OCR_HEAD[w.toLowerCase()]; })) return "";
+  if(!/[aeiouyAEIOUY]/.test(sp.en)) return "";
+  return ws.map(function(w){ return w === "I" ? w : w.toLowerCase(); }).join(" ");
+}
+function cleanRuPart(s){
+  s = s.replace(/[^А-Яа-яЁё ,\-]/g, " ").replace(/\s+/g, " ").replace(/^[\s,\-]+|[\s,\-]+$/g, "");
+  if(!s || s.replace(/[^А-Яа-яЁё]/g, "").length < 2) return "";
+  if(s.split(" ").length > 5) return "";
+  return s.charAt(0).toLowerCase() + s.slice(1);
+}
+function parseOcr(text){
+  var items = [], enOnly = [], ruOnly = [];
+  String(text || "").split(/\n+/).forEach(function(line){
+    line = line.replace(/\[[^\]]*\]/g, " ").replace(/\/[^\/]{1,30}\//g, " ").replace(/^\s*\d+[.)]?\s*/, "");
+    var toks = line.split(/\s+/).filter(Boolean);
+    var tags = toks.map(scriptOf);
+    for(var i = 0; i < tags.length; i++) if(tags[i] === "?"){
+      var j = i - 1; while(j >= 0 && (tags[j] === "?" || tags[j] === "")) j--;
+      var k2 = i + 1; while(k2 < tags.length && (tags[k2] === "?" || tags[k2] === "")) k2++;
+      tags[i] = j >= 0 ? tags[j] : k2 < tags.length ? tags[k2] : "en";
+    }
+    var en = [], ru = [];
+    toks.forEach(function(t, i){
+      if(tags[i] === "en") en.push(toLatin(t));
+      else if(tags[i] === "ru") ru.push(toCyr(t));
+    });
+    if(!ru.length && /[,;:•·]/.test(line)){
+      line.split(/[,;:•·]+/).forEach(function(seg){
+        var se = cleanEnPart(seg.split(/\s+/).filter(Boolean).map(toLatin).join(" "));
+        if(se) enOnly.push(se);
+      });
+      return;
+    }
+    var e = cleanEnPart(en.join(" ")), r = cleanRuPart(ru.join(" "));
+    if(e && r) items.push({ en:e, ru:r });
+    else if(e && !ru.length) enOnly.push(e);
+    else if(r && !en.length) ruOnly.push(r);
+  });
+  if(enOnly.length && enOnly.length === ruOnly.length){
+    enOnly.forEach(function(e, i){ items.push({ en:e, ru:ruOnly[i] }); });
+  }else{
+    enOnly.forEach(function(e){ items.push({ en:e, ru:"" }); });
+  }
+  var seen = {}, out = [];
+  state.words.forEach(function(w){ seen[norm(w.en)] = true; });
+  items.forEach(function(it){
+    var key = norm(splitArticle(it.en).en);
+    if(!key || seen[key]) return;
+    seen[key] = true;
+    out.push({ en:it.en, ru:it.ru, on: !!it.ru });
+  });
+  return out.slice(0, 40);
+}
+
+function photoReview(){
+  var ph = view.photo, items = ph.items;
+  var box = h("div", { class:"stack" });
+  box.appendChild(h("div", { class:"row" },
+    h("div", { class:"grow", style:"font-weight:800;font-size:19px", text: items.length ? "Нашёл " + items.length + " " + plural(items.length, "слово", "слова", "слов") : "Слов не нашёл" }),
+    h("button", { class:"btn ghost iconbtn", type:"button", "aria-label":"Закрыть", onclick:function(){ view.photo = null; render(); } }, ico("close"))
+  ));
+  if(!items.length){
+    box.appendChild(h("div", { class:"empty stack" },
+      illo("need-words", 160, "pop"),
+      h("p", { text:"Сфотографируй поближе и ровно, чтобы слова были крупными и хорошо освещёнными." }),
+      h("button", { class:"btn primary", type:"button", onclick:pickPhoto }, ico("camera"), "Ещё фото")
+    ));
+    return box;
+  }
+  if(items.some(function(it){ return !(it.ru||"").trim(); })) box.appendChild(h("div", { class:"hint", text:"Где нет перевода — допиши его, и слово отметится." }));
+  var list = h("div", { class:"stack ocrlist" });
+  var addBtn = h("button", { class:"btn primary block", type:"button", onclick:addFromPhoto });
+  function isValid(it){ return !!(splitArticle(it.en).en && (it.ru||"").trim()); }
+  function paintItem(it, el, chk){
+    el.className = "ocritem" + (it.on ? " on" : "");
+    chk.setAttribute("aria-checked", it.on ? "true" : "false");
+    chk.textContent = ""; chk.appendChild(ico(it.on ? "check" : "circle", 20));
+  }
+  function paintAdd(){
+    var n = items.filter(function(it){ return it.on && isValid(it); }).length;
+    addBtn.textContent = ""; addBtn.appendChild(ico("plus"));
+    addBtn.appendChild(document.createTextNode(n ? "Добавить " + n + " " + plural(n, "слово", "слова", "слов") : "Отметь слова"));
+    if(n) addBtn.removeAttribute("disabled"); else addBtn.setAttribute("disabled", "");
+  }
+  items.forEach(function(it, i){
+    if(it.on && !isValid(it)) it.on = false;
+    var chk = h("button", { class:"ocrcheck", type:"button", role:"checkbox", "aria-label":"Добавить это слово" });
+    var el = h("div", { class:"ocritem" }, chk,
+      h("div", { class:"ocrfields" },
+        h("input", { type:"text", id:"o-en-" + i, value:it.en, autocapitalize:"off", autocorrect:"off", spellcheck:"false", "aria-label":"Слово",
+          oninput:function(ev){ it.en = ev.target.value; if(!isValid(it)) it.on = false; paintItem(it, el, chk); paintAdd(); } }),
+        h("input", { type:"text", id:"o-ru-" + i, value:it.ru, placeholder:"перевод", "aria-label":"Перевод",
+          oninput:function(ev){ var was = isValid(it); it.ru = ev.target.value; var now = isValid(it);
+            if(now && !was) it.on = true; if(!now) it.on = false; paintItem(it, el, chk); paintAdd(); } })
+      ),
+      speakerBtn(it.en, "en-US")
+    );
+    chk.addEventListener("click", function(){
+      if(!it.on && !isValid(it)){ var r = document.getElementById("o-ru-" + i); if(r) r.focus(); return; }
+      it.on = !it.on; paintItem(it, el, chk); paintAdd();
+    });
+    paintItem(it, el, chk);
+    list.appendChild(el);
+  });
+  box.appendChild(list);
+  paintAdd();
+  box.appendChild(addBtn);
+  box.appendChild(h("button", { class:"btn block", type:"button", onclick:pickPhoto }, ico("camera"), "Ещё фото"));
+  return box;
+}
+function addFromPhoto(){
+  var items = view.photo.items, added = 0, have = {};
+  state.words.forEach(function(w){ have[norm(w.en)] = true; });
+  items.forEach(function(it){
+    if(!it.on) return;
+    var sp = splitArticle(it.en), ru = (it.ru||"").trim();
+    if(!sp.en || !ru || !/[A-Za-z]/.test(sp.en) || have[norm(sp.en)]) return;
+    have[norm(sp.en)] = true;
+    state.words.push(makeWord(sp.en, ru, "", "", false, sp.art));
+    added++;
+  });
+  if(!added){ toast("Отметь слова с переводом"); return; }
+  addStars(added);
+  stopOcr();
+  view.photo = null;
+  checkBadges(); save(); render();
+  toast("Добавлено " + added + " " + plural(added, "слово", "слова", "слов") + ". +" + added + " ★");
 }
 
 /* --- quick add (several in a row) --- */
@@ -1502,6 +1798,10 @@ function screenAwards(){
 function start(hot){
   screenEl = document.getElementById("screen");
   tabbarEl = document.getElementById("tabbar");
+  document.getElementById("photo-input").addEventListener("change", function(ev){
+    var f = ev.target.files && ev.target.files[0];
+    if(f && profile && tab === "words") startPhoto(f);
+  });
   document.getElementById("who").addEventListener("click", function(){
     if(!profile) return;
     if(confirm("Сменить ученика? Слова и прогресс " + profile.name + " сохранятся.")) leaveProfile();
