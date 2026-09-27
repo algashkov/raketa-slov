@@ -1078,8 +1078,17 @@ function startPhoto(file){
 var LOOK_L2C = { a:"а", o:"о", e:"е", c:"с", p:"р", x:"х", y:"у", k:"к", m:"м", A:"А", O:"О", E:"Е", C:"С", P:"Р", X:"Х", Y:"У", K:"К", M:"М", T:"Т", H:"Н", B:"В" };
 var LOOK_C2L = {};
 (function(){ for(var k in LOOK_L2C) if(!LOOK_C2L[LOOK_L2C[k]]) LOOK_C2L[LOOK_L2C[k]] = k; LOOK_C2L["у"] = "y"; LOOK_C2L["н"] = "h"; LOOK_C2L["в"] = "b"; LOOK_C2L["т"] = "t"; })();
+var DICT_RAW = "cat:кошка|dog:собака|cow:корова|pig:свинья|hen:курица|duck:утка|horse:лошадь|sheep:овца|goat:коза|rabbit:кролик|mouse:мышь|fox:лиса|wolf:волк|bear:медведь|frog:лягушка|bird:птица|fish:рыба|lion:лев|tiger:тигр|monkey:обезьяна|elephant:слон|giraffe:жираф|crocodile:крокодил|zebra:зебра|snake:змея|parrot:попугай|owl:сова|bee:пчела|puppy:щенок|kitten:котёнок|animal:животное|pet:домашний питомец|apple:яблоко|banana:банан|orange:апельсин|lemon:лимон|pear:груша|plum:слива|grapes:виноград|cake:торт|bread:хлеб|butter:масло|cheese:сыр|milk:молоко|tea:чай|coffee:кофе|juice:сок|water:вода|egg:яйцо|meat:мясо|soup:суп|sweets:конфеты|sweet:конфета|candy:конфета|jam:варенье|honey:мёд|ice cream:мороженое|sandwich:бутерброд|pizza:пицца|carrot:морковь|potato:картофель|tomato:помидор|cucumber:огурец|nut:орех|pie:пирог|sugar:сахар|salt:соль|porridge:каша|mother:мама|mum:мама|mummy:мамочка|father:папа|dad:папа|daddy:папочка|sister:сестра|brother:брат|grandmother:бабушка|granny:бабушка|grandfather:дедушка|grandpa:дедушка|family:семья|baby:малыш|son:сын|daughter:дочь|aunt:тётя|uncle:дядя|friend:друг|boy:мальчик|girl:девочка|man:мужчина|woman:женщина|child:ребёнок|children:дети|teacher:учитель|pupil:ученик|red:красный|blue:синий|green:зелёный|yellow:жёлтый|black:чёрный|white:белый|brown:коричневый|grey:серый|gray:серый|pink:розовый|orange:оранжевый|purple:фиолетовый|colour:цвет|color:цвет|one:один|two:два|three:три|four:четыре|five:пять|six:шесть|seven:семь|eight:восемь|nine:девять|ten:десять|eleven:одиннадцать|twelve:двенадцать|twenty:двадцать|hundred:сто|number:число|school:школа|class:класс|book:книга|pen:ручка|pencil:карандаш|ruler:линейка|rubber:ластик|eraser:ластик|bag:сумка|schoolbag:портфель|desk:парта|chair:стул|table:стол|board:доска|copybook:тетрадь|notebook:тетрадь|lesson:урок|letter:буква|word:слово|picture:картинка|paint:краска|head:голова|eye:глаз|eyes:глаза|ear:ухо|ears:уши|nose:нос|mouth:рот|tooth:зуб|teeth:зубы|hair:волосы|face:лицо|hand:рука|arm:рука|leg:нога|foot:ступня|feet:ступни|finger:палец|tail:хвост|body:тело|hat:шляпа|cap:кепка|coat:пальто|dress:платье|skirt:юбка|shirt:рубашка|t-shirt:футболка|jeans:джинсы|trousers:брюки|shorts:шорты|socks:носки|shoes:туфли|boots:ботинки|jacket:куртка|jumper:свитер|sweater:свитер|scarf:шарф|gloves:перчатки|house:дом|home:дом|flat:квартира|room:комната|kitchen:кухня|bedroom:спальня|bathroom:ванная|garden:сад|door:дверь|window:окно|bed:кровать|sofa:диван|lamp:лампа|clock:часы|cup:чашка|plate:тарелка|spoon:ложка|fork:вилка|knife:нож|glass:стакан|box:коробка|key:ключ|toy:игрушка|ball:мяч|doll:кукла|car:машина|bike:велосипед|kite:воздушный змей|train:поезд|plane:самолёт|ship:корабль|boat:лодка|bus:автобус|game:игра|robot:робот|teddy bear:плюшевый мишка|drum:барабан|sun:солнце|moon:луна|star:звезда|sky:небо|rain:дождь|snow:снег|tree:дерево|flower:цветок|grass:трава|river:река|sea:море|lake:озеро|forest:лес|park:парк|street:улица|city:город|town:город|zoo:зоопарк|farm:ферма|shop:магазин|day:день|night:ночь|morning:утро|evening:вечер|week:неделя|year:год|today:сегодня|summer:лето|winter:зима|spring:весна|autumn:осень|birthday:день рождения|party:праздник|present:подарок|holiday:каникулы|big:большой|small:маленький|little:маленький|long:длинный|short:короткий|tall:высокий|fat:толстый|thin:худой|old:старый|young:молодой|new:новый|good:хороший|bad:плохой|nice:милый, приятный|happy:счастливый|sad:грустный|funny:смешной|kind:добрый|clever:умный|hot:горячий|cold:холодный|fast:быстрый|slow:медленный|beautiful:красивый|pretty:хорошенький|ugly:некрасивый|clean:чистый|dirty:грязный|strong:сильный|brave:храбрый|merry:весёлый|go:идти|come:приходить|run:бегать|jump:прыгать|swim:плавать|fly:летать|walk:гулять|sing:петь|dance:танцевать|play:играть|read:читать|write:писать|draw:рисовать|say:сказать|speak:говорить|talk:разговаривать|listen:слушать|look:смотреть|see:видеть|like:нравиться|love:любить|want:хотеть|have:иметь|eat:есть|drink:пить|sleep:спать|sit:сидеть|stand:стоять|take:брать|give:давать|make:делать|help:помогать|open:открывать|close:закрывать|climb:лазать|skip:прыгать через скакалку|ride:кататься|cook:готовить|wash:мыть|count:считать|meet:встречать|know:знать|live:жить|hello:привет|hi:привет|goodbye:до свидания|bye:пока|yes:да|no:нет|please:пожалуйста|thank you:спасибо|thanks:спасибо|sorry:извини|I:я|you:ты, вы|he:он|she:она|it:оно, это|we:мы|they:они|my:мой|your:твой|his:его|her:её|name:имя|what:что|who:кто|where:где|how:как|this:это|that:тот|here:здесь|there:там|and:и|with:с|in:в|on:на|under:под|very:очень|too:тоже|not:не";
+var DICT = null;
+function dictRu(en){
+  if(!DICT){ DICT = {}; DICT_RAW.split("|").forEach(function(p){ var i = p.indexOf(":"); if(i > 0) DICT[p.slice(0, i).toLowerCase()] = p.slice(i + 1); }); }
+  var k = String(en || "").trim(), sp = splitArticle(k);
+  return DICT[sp.en.toLowerCase()] || DICT[k.toLowerCase()] || (sp.en === "I" ? DICT.I : "") || "";
+}
 var OCR_HEAD = { unit:1, lesson:1, page:1, exercise:1, ex:1, module:1, step:1, part:1, task:1 };
-var OCR_SKIP = { listen:1, repeat:1, read:1, say:1, look:1, write:1, match:1, unit:1, lesson:1, page:1, ex:1, exercise:1, and:1, sing:1, play:1, point:1, the:1, answer:1, ask:1, find:1, draw:1, colour:1, color:1, circle:1, tick:1, words:1, word:1, new:1 };
+var OCR_SKIP = { listen:1, repeat:1, read:1, say:1, look:1, write:1, match:1, unit:1, lesson:1, page:1, ex:1, exercise:1, and:1, sing:1, play:1, point:1,
+  the:1, answer:1, ask:1, find:1, draw:1, colour:1, color:1, circle:1, tick:1, words:1, word:1, new:1, act:1, out:1, chant:1, number:1, complete:1,
+  talk:1, choose:1, trace:1, copy:1, stick:1, guess:1, mime:1, show:1, tell:1, "let's":1, lets:1, to:1, with:1, your:1, friend:1, then:1, or:1, check:1, learn:1, remember:1 };
 function scriptOf(word){
   var l = 0, c = 0;
   for(var i = 0; i < word.length; i++){
@@ -1089,7 +1098,10 @@ function scriptOf(word){
   }
   return l > c ? "en" : c > l ? "ru" : (l ? "?" : "");
 }
-function toLatin(w){ return w.replace(/[А-Яа-яЁё]/g, function(ch){ return LOOK_C2L[ch] || ""; }); }
+function toLatin(w){
+  if(w.normalize) w = w.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  return w.replace(/[А-Яа-яЁё]/g, function(ch){ return LOOK_C2L[ch] || ""; });
+}
 function toCyr(w){ return w.replace(/[A-Za-z]/g, function(ch){ return LOOK_L2C[ch] || ""; }); }
 function cleanEnPart(s){
   s = s.replace(/[^A-Za-z' \-]/g, " ").replace(/\s+/g, " ").replace(/^[\s'\-]+|[\s'\-]+$/g, "");
@@ -1100,9 +1112,11 @@ function cleanEnPart(s){
   var sp = splitArticle(s);
   var core = sp.en.split(" ");
   if(core.some(function(w){ return w.replace(/['\-]/g, "").length < 2 && w !== "I"; }) && core.join("").length < 3) return "";
-  if(core.every(function(w){ return OCR_SKIP[w.toLowerCase()]; })) return "";
+  var allSkip = core.every(function(w){ return OCR_SKIP[w.toLowerCase()]; });
+  if(allSkip && (core.length > 1 || /^[A-Z]/.test(core[0]))) return "";
   if(ws.some(function(w){ return OCR_HEAD[w.toLowerCase()]; })) return "";
   if(!/[aeiouyAEIOUY]/.test(sp.en)) return "";
+  if(ws.length === 1 && /^[A-Z][a-z]+$/.test(s) && !dictRu(s)) return s;
   return ws.map(function(w){ return w === "I" ? w : w.toLowerCase(); }).join(" ");
 }
 function cleanRuPart(s){
@@ -1114,8 +1128,23 @@ function cleanRuPart(s){
 function parseOcr(text){
   var items = [], enOnly = [], ruOnly = [];
   String(text || "").split(/\n+/).forEach(function(line){
-    line = line.replace(/\[[^\]]*\]/g, " ").replace(/\/[^\/]{1,30}\//g, " ").replace(/^\s*\d+[.)]?\s*/, "");
-    var toks = line.split(/\s+/).filter(Boolean);
+    line = line.replace(/[\[\|(][^\]\)\|\[(]{0,8}[\]\|)]/g, " ").replace(/\/[^\/]{1,30}\//g, " ").replace(/^\s*\d+[a-z]?[.)]?\s+/, "").trim();
+    if(!line) return;
+    var latinOnly = !/[А-Яа-яЁё]/.test(line);
+    var toks = line.split(/\s+/).filter(function(t){
+      if(/\d/.test(t)) return false;
+      var letters = t.replace(/[^A-Za-zА-Яа-яЁё]/g, "");
+      if(!letters) return false;
+      if(letters.length === 1 && !/^[aAI]$/.test(letters) && /[A-Za-z]/.test(letters)) return false;
+      return true;
+    });
+    if(!toks.length) return;
+    if(latinOnly){
+      var words = toks.map(function(t){ return t.replace(/[^A-Za-z']/g, ""); }).filter(Boolean);
+      var endsSentence = /[.!?,]["»”]?\s*$/.test(line);
+      if(/^[A-Z]/.test(words[0] || "") && (words.length > 1 ? endsSentence : /[.!?,]\s*$/.test(line))) return;
+      if(words.slice(1).some(function(w){ return /^[A-Z]/.test(w) && w !== "I"; })) return;
+    }
     var tags = toks.map(scriptOf);
     for(var i = 0; i < tags.length; i++) if(tags[i] === "?"){
       var j = i - 1; while(j >= 0 && (tags[j] === "?" || tags[j] === "")) j--;
@@ -1150,7 +1179,8 @@ function parseOcr(text){
     var key = norm(splitArticle(it.en).en);
     if(!key || seen[key]) return;
     seen[key] = true;
-    out.push({ en:it.en, ru:it.ru, on: !!it.ru });
+    var ru = it.ru || dictRu(it.en);
+    out.push({ en:it.en, ru:ru, on: !!ru, auto: !it.ru && !!ru });
   });
   return out.slice(0, 40);
 }
