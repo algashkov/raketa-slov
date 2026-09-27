@@ -929,6 +929,8 @@ function startVoice(f, key){
   render();
   listen(key === "en" ? "en-US" : "ru-RU", function(text){
     f[key] = cleanSpoken(text, key);
+    if(key === "ru") f.ruAuto = false;
+    if(key === "en" && (!(f.ru||"").trim() || f.ruAuto)){ var d = dictRu(f.en); f.ru = d; f.ruAuto = !!d; }
   }, function(ok, msg){
     if(view.form !== f) return;
     f.listening = null;
@@ -1067,6 +1069,34 @@ function dictRu(en){
   var k = String(en || "").trim(), sp = splitArticle(k);
   return DICT[sp.en.toLowerCase()] || DICT[k.toLowerCase()] || (sp.en === "I" ? DICT.I : "") || "";
 }
+function within1(a, b){
+  if(a === b) return true;
+  var la = a.length, lb = b.length;
+  if(Math.abs(la - lb) > 1) return false;
+  var i = 0, j = 0, diff = 0;
+  while(i < la && j < lb){
+    if(a.charAt(i) === b.charAt(j)){ i++; j++; continue; }
+    if(++diff > 1) return false;
+    if(la > lb) i++; else if(lb > la) j++; else { i++; j++; }
+  }
+  return diff + (la - i) + (lb - j) <= 1;
+}
+function swapped(a, b){
+  if(a.length !== b.length) return false;
+  var d = [];
+  for(var i = 0; i < a.length; i++) if(a.charAt(i) !== b.charAt(i)){ d.push(i); if(d.length > 2) return false; }
+  return d.length === 2 && d[1] === d[0] + 1 && a.charAt(d[0]) === b.charAt(d[1]) && a.charAt(d[1]) === b.charAt(d[0]);
+}
+// слово, отличающееся от словарного на одну букву (ошибка распознавания), -> словарное слово
+function dictFix(en){
+  var sp = splitArticle(en), w = sp.en.toLowerCase();
+  if(/^[A-Z][a-z]/.test(sp.en)) return "";
+  if(!w || w.indexOf(" ") !== -1 || w.length < 4 || dictRu(w)) return "";
+  dictRu("x");
+  var hit = "", n = 0;
+  for(var k in DICT){ if(k.indexOf(" ") === -1 && k.length >= 4 && (within1(w, k) || swapped(w, k))){ hit = k; if(++n > 1) return ""; } }
+  return hit ? (sp.art ? sp.art + " " : "") + hit : "";
+}
 var OCR_HEAD = { unit:1, lesson:1, page:1, exercise:1, ex:1, module:1, step:1, part:1, task:1 };
 var OCR_SKIP = { listen:1, repeat:1, read:1, say:1, look:1, write:1, match:1, unit:1, lesson:1, page:1, ex:1, exercise:1, and:1, sing:1, play:1, point:1,
   the:1, answer:1, ask:1, find:1, draw:1, colour:1, color:1, circle:1, tick:1, words:1, word:1, new:1, act:1, out:1, chant:1, number:1, complete:1,
@@ -1158,6 +1188,7 @@ function parseOcr(text){
   var seen = {}, out = [];
   state.words.forEach(function(w){ seen[norm(w.en)] = true; });
   items.forEach(function(it){
+    if(!it.ru){ var fx = dictFix(it.en); if(fx) it.en = fx; }
     var key = norm(splitArticle(it.en).en);
     if(!key || seen[key]) return;
     seen[key] = true;
@@ -1203,9 +1234,17 @@ function photoReview(){
     var el = h("div", { class:"ocritem" }, chk,
       h("div", { class:"ocrfields" },
         h("input", { type:"text", id:"o-en-" + i, value:it.en, autocapitalize:"off", autocorrect:"off", spellcheck:"false", "aria-label":"Слово",
-          oninput:function(ev){ it.en = ev.target.value; if(!isValid(it)) it.on = false; paintItem(it, el, chk); paintAdd(); } }),
+          oninput:function(ev){
+            it.en = ev.target.value;
+            if(!(it.ru||"").trim() || it.auto){
+              var d = dictRu(it.en); it.ru = d; it.auto = !!d;
+              var r = document.getElementById("o-ru-" + i); if(r) r.value = d;
+              if(d) it.on = true;
+            }
+            if(!isValid(it)) it.on = false; paintItem(it, el, chk); paintAdd();
+          } }),
         h("input", { type:"text", id:"o-ru-" + i, value:it.ru, placeholder:"перевод", "aria-label":"Перевод",
-          oninput:function(ev){ var was = isValid(it); it.ru = ev.target.value; var now = isValid(it);
+          oninput:function(ev){ var was = isValid(it); it.ru = ev.target.value; it.auto = false; var now = isValid(it);
             if(now && !was) it.on = true; if(!now) it.on = false; paintItem(it, el, chk); paintAdd(); } })
       ),
       speakerBtn(it.en, "en-US")
@@ -1255,12 +1294,19 @@ function quickForm(){
     ),
     h("div", { class:"row" },
       h("input", { type:"text", id:"f-en", class:"grow", value:f.en, placeholder:"слово, например a cat", autocapitalize:"off",
-        autocorrect:"off", spellcheck:"false", "aria-label":"Слово по-английски", oninput:upd("en"), onkeydown:onEnter }),
+        autocorrect:"off", spellcheck:"false", "aria-label":"Слово по-английски", onkeydown:onEnter,
+        oninput:function(ev){
+          f.en = ev.target.value;
+          if(!(f.ru||"").trim() || f.ruAuto){
+            var d = dictRu(f.en); f.ru = d; f.ruAuto = !!d;
+            var r = document.getElementById("f-ru"); if(r) r.value = d;
+          }
+        } }),
       micBtn(f, "en")
     ),
     h("div", { class:"row" },
       h("input", { type:"text", id:"f-ru", class:"grow", value:f.ru, placeholder:"перевод", "aria-label":"Перевод",
-        oninput:upd("ru"), onkeydown:onEnter }),
+        oninput:function(ev){ f.ru = ev.target.value; f.ruAuto = false; }, onkeydown:onEnter }),
       micBtn(f, "ru")
     ),
     f.micMsg ? h("div", { class:"micmsg" + (f.listening ? " live" : ""), text:f.micMsg }) : null,
@@ -1315,7 +1361,7 @@ function submitForm(){
     speak(full(nw), "en-US", 0.8);
     toast("Добавлено: " + full(nw));
     f.added = (f.added || []).concat([nw.id]);
-    f.en = ""; f.ru = ""; f.micMsg = "";
+    f.en = ""; f.ru = ""; f.ruAuto = false; f.micMsg = "";
   }
   checkBadges(); save(); render();
 }
