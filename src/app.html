@@ -238,6 +238,22 @@ input::placeholder,textarea::placeholder{color:var(--ink2);opacity:.65;font-weig
 .countdown i{display:block;height:100%;background:var(--accent);border-radius:3px;animation:countdown linear both}
 @keyframes countdown{from{width:100%}to{width:0}}
 
+/* ---- blocks ---- */
+.blocks{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -16px;padding:2px 16px}
+.blocks::-webkit-scrollbar{display:none}
+.blocks.wrap{flex-wrap:wrap;overflow:visible;margin:0;padding:0}
+.bchip{appearance:none;border:0;flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:6px 14px;border-radius:999px;
+  background:var(--surface);color:var(--ink);font:inherit;font-size:15px;font-weight:800;cursor:pointer;white-space:nowrap;transition:background-color .12s ease}
+.bchip.on{background:var(--accent);color:var(--on-accent)}
+.bchip .bcount{font-size:12px;font-weight:800;opacity:.6;font-variant-numeric:tabular-nums}
+.bchip.add{padding:6px 11px;color:var(--accent);background:var(--accent-soft)}
+.bchip.add.wide{padding:6px 14px}
+.bmenu{display:flex;gap:8px;flex-wrap:wrap}
+.btag{display:inline-block;margin-left:8px;padding:0 7px;border-radius:6px;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:800;vertical-align:1px}
+.word.selrow{appearance:none;border:0;width:100%;display:flex;align-items:center;gap:12px;padding:10px 12px;font:inherit;color:inherit;cursor:pointer;text-align:left}
+.word.selrow.on{background:var(--good-soft)}
+.word.selrow.on .ocrcheck{background:var(--good);color:#fff}
+
 /* ---- photo import ---- */
 .btn.camera{width:60px;min-width:60px;padding:0;background:var(--accent-soft);color:var(--accent)}
 .ocritem{display:flex;align-items:center;gap:8px;background:var(--surface);border-radius:16px;padding:8px;opacity:.6;transition:opacity .15s ease}
@@ -338,20 +354,28 @@ function makeWord(en, ru, ex, exRu, sample, art){
 }
 function sampleWords(){ return SEED.map(function(s){ return makeWord(s[0],s[1],s[2],s[3],true); }); }
 function freshState(){
-  return { rev:0, updatedAt:Date.now(), words: [],
+  return { rev:0, updatedAt:Date.now(), words: [], blocks: [], activeBlock: "",
     stats:{ stars:0, streak:0, lastDay:null, tests:0, perfect:0, badges:[] } };
 }
 var state = freshState();
 
 function migrate(raw){
-  var s = { rev: raw.rev || 0, updatedAt: raw.updatedAt || Date.now(), words: [], stats: {} };
+  var s = { rev: raw.rev || 0, updatedAt: raw.updatedAt || Date.now(), words: [], stats: {}, blocks: [], activeBlock: "" };
+  var bids = {};
+  (Array.isArray(raw.blocks) ? raw.blocks : []).forEach(function(b){
+    if(!b || !b.id || bids[b.id]) return;
+    bids[b.id] = 1;
+    s.blocks.push({ id:String(b.id), name:String(b.name || "Блок").slice(0, 30), createdAt: b.createdAt || 0 });
+  });
+  s.activeBlock = raw.activeBlock === "none" || bids[raw.activeBlock] ? raw.activeBlock : "";
   (raw.words || []).forEach(function(w){
     if(!w || !w.en || !w.ru) return;
     var sp = splitArticle(w.en);
     s.words.push({ id: w.id || uid(), en:sp.en, art: sp.art || (ARTICLES.indexOf(w.art) > 0 ? w.art : ""), ru:String(w.ru), ex:String(w.ex||""), exRu:String(w.exRu||""),
       level: Math.max(0, Math.min(5, w.level|0)), right:w.right|0, wrong:w.wrong|0, seen:w.seen|0,
       lastReview: w.lastReview|0, addedAt: w.addedAt || Date.now(),
-      sentences: Array.isArray(w.sentences) ? w.sentences.slice(0,20).map(String) : [], sample: !!w.sample });
+      sentences: Array.isArray(w.sentences) ? w.sentences.slice(0,20).map(String) : [], sample: !!w.sample,
+      block: bids[w.block] ? String(w.block) : "" });
   });
   var st = raw.stats || {};
   s.stats = { stars: st.stars|0, streak: st.streak|0, lastDay: st.lastDay || null,
@@ -645,9 +669,105 @@ function toast(msg){
   setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); }, 2200);
 }
 
+/* ============== blocks (уроки) ============== */
+function blockById(id){ var b = state.blocks || []; for(var i = 0; i < b.length; i++) if(b[i].id === id) return b[i]; return null; }
+function activeWords(){
+  var a = state.activeBlock || "";
+  if(!a) return state.words;
+  if(a === "none") return state.words.filter(function(w){ return !w.block; });
+  if(!blockById(a)) return state.words;
+  return state.words.filter(function(w){ return w.block === a; });
+}
+function targetBlock(){ var a = state.activeBlock; return a && a !== "none" && blockById(a) ? a : ""; }
+function countIn(id){ return state.words.filter(function(w){ return (w.block || "") === id; }).length; }
+function nextBlockName(){ return "Урок " + ((state.blocks || []).length + 1); }
+function newBlock(ask){
+  var name = nextBlockName();
+  if(ask){
+    var got = window.prompt("Название блока", name);
+    if(got === null) return null;
+    name = got.trim() || name;
+  }
+  var b = { id: uid(), name: name.slice(0, 30), createdAt: Date.now() };
+  (state.blocks = state.blocks || []).push(b);
+  return b;
+}
+function setActiveBlock(id){
+  state.activeBlock = id || "";
+  var keep = tab === "words" ? { form: view.form, photo: view.photo, sel: view.sel } : {};
+  view = keep;
+  save(); render();
+  if(screenEl) screenEl.scrollTop = 0;
+}
+function blockBar(){
+  var blocks = state.blocks || [];
+  var bar = h("div", { class:"blocks", role:"tablist", "aria-label":"Блоки слов" });
+  function chip(id, name, count){
+    var on = (state.activeBlock || "") === id;
+    return h("button", { class:"bchip" + (on ? " on" : ""), type:"button", role:"tab", "aria-selected": on ? "true" : "false",
+      onclick:function(){
+        if(on && id && id !== "none"){ view.blockMenu = !view.blockMenu; render(); return; }
+        setActiveBlock(id);
+      } }, h("span", { text:name }), h("span", { class:"bcount", text:String(count) }));
+  }
+  bar.appendChild(chip("", "Все", state.words.length));
+  blocks.forEach(function(b){ bar.appendChild(chip(b.id, b.name, countIn(b.id))); });
+  var loose = countIn("");
+  if(blocks.length && loose) bar.appendChild(chip("none", "Без блока", loose));
+  bar.appendChild(h("button", { class:"bchip add", type:"button", "aria-label":"Новый блок", onclick:function(){
+    var b = newBlock(true); if(b){ toast("Блок «" + b.name + "» создан"); setActiveBlock(b.id); }
+  } }, ico("plus", 18)));
+  var wrap = h("div", { class:"stack", style:"gap:8px" }, bar);
+  var cur = blockById(state.activeBlock);
+  if(view.blockMenu && cur){
+    wrap.appendChild(h("div", { class:"bmenu" },
+      h("button", { class:"btn small", type:"button", onclick:function(){
+        var got = window.prompt("Новое название", cur.name);
+        if(got === null || !got.trim()) return;
+        cur.name = got.trim().slice(0, 30); view.blockMenu = false; save(); render();
+      } }, ico("pencil", 18), "Переименовать"),
+      h("button", { class:"btn small", type:"button", onclick:function(){
+        if(!confirm("Удалить блок «" + cur.name + "»? Слова останутся в словаре.")) return;
+        state.words.forEach(function(w){ if(w.block === cur.id) w.block = ""; });
+        state.blocks = state.blocks.filter(function(b){ return b.id !== cur.id; });
+        view.blockMenu = false; toast("Блок удалён, слова остались"); setActiveBlock("");
+      } }, ico("trash", 18), "Удалить блок")
+    ));
+  }
+  return wrap;
+}
+function moveSelected(id){
+  var ids = Object.keys(view.sel || {}), n = 0;
+  state.words.forEach(function(w){ if(view.sel[w.id]){ w.block = id; n++; } });
+  var b = blockById(id);
+  view.sel = null; view.movePick = false;
+  state.activeBlock = id || ((state.blocks || []).length ? "none" : "");
+  save(); render();
+  toast(n + " " + plural(n, "слово", "слова", "слов") + (b ? " → «" + b.name + "»" : " без блока"));
+}
+function selectionBar(){
+  var n = Object.keys(view.sel || {}).length, blocks = state.blocks || [];
+  if(view.movePick){
+    var chips = h("div", { class:"blocks wrap" });
+    blocks.forEach(function(b){
+      chips.appendChild(h("button", { class:"bchip", type:"button", onclick:function(){ moveSelected(b.id); } }, h("span", { text:b.name }), h("span", { class:"bcount", text:String(countIn(b.id)) })));
+    });
+    chips.appendChild(h("button", { class:"bchip add wide", type:"button", onclick:function(){ var b = newBlock(true); if(b) moveSelected(b.id); } }, ico("plus", 18), h("span", { text:"Новый блок" })));
+    if(blocks.length) chips.appendChild(h("button", { class:"bchip", type:"button", onclick:function(){ moveSelected(""); } }, h("span", { text:"Без блока" })));
+    return h("div", { class:"stack", style:"gap:8px" },
+      h("div", { class:"row" }, h("div", { class:"grow", style:"font-weight:800", text:"Куда положить " + n + " " + plural(n, "слово", "слова", "слов") + "?" }),
+        h("button", { class:"btn ghost iconbtn", type:"button", "aria-label":"Назад", onclick:function(){ view.movePick = false; render(); } }, ico("back"))),
+      chips);
+  }
+  return h("div", { class:"row" },
+    h("button", { class:"btn primary grow", type:"button", disabled: n ? null : true, onclick:function(){ view.movePick = true; render(); } },
+      n ? "В блок… (" + n + ")" : "Отметь слова"),
+    h("button", { class:"btn", type:"button", onclick:function(){ view.sel = null; view.movePick = false; render(); } }, "Готово"));
+}
+
 /* ============== word picking ============== */
 function pickWords(n, filter){
-  var pool = state.words.filter(filter || function(){ return true; });
+  var pool = activeWords().filter(filter || function(){ return true; });
   pool.sort(function(a,b){
     if(a.level !== b.level) return a.level - b.level;
     return (a.lastReview||0) - (b.lastReview||0);
@@ -660,7 +780,8 @@ function pickWords(n, filter){
   return out;
 }
 function otherWords(word, n, key){
-  var pool = shuffle(state.words.filter(function(w){ return w.id !== word.id && norm(w[key]) !== norm(word[key]); }));
+  var base = activeWords().length >= 4 ? activeWords() : state.words;
+  var pool = shuffle(base.filter(function(w){ return w.id !== word.id && norm(w[key]) !== norm(word[key]); }));
   return pool.slice(0, n);
 }
 function progressRow(done, total){
@@ -677,7 +798,7 @@ function levelDots(level){
 function needMore(min, what){
   return h("div", { class:"empty stack" },
     illo("need-words", 170, "pop"),
-    h("p", { text:"Нужно хотя бы " + min + " " + plural(min, "слово", "слова", "слов") }),
+    h("p", { text:"Нужно хотя бы " + min + " " + plural(min, "слово", "слова", "слов") + (state.activeBlock ? " в этом блоке" : "") }),
     h("button", { class:"btn primary", type:"button", onclick:function(){ go("words"); } }, ico("plus"), "Добавить слова")
   );
 }
@@ -742,7 +863,9 @@ function render(){
       onclick:function(){ go(t.id); } }, ico(t.ic, 24), h("span", { text:t.nm })));
   });
   actionEl.textContent = "";
-  if(tab === "words" && !view.form && !view.photo){
+  if(tab === "words" && view.sel){
+    actionEl.appendChild(selectionBar());
+  }else if(tab === "words" && !view.form && !view.photo){
     actionEl.appendChild(h("div", { class:"row" },
       h("button", { class:"btn primary grow", type:"button", onclick:function(){
         view.form = { en:"", ru:"", editId:null, err:"", added:[], micMsg:"", listening:null }; render();
@@ -758,6 +881,11 @@ function render(){
     : tab === "play" ? screenPlay()
     : tab === "test" ? screenTest()
     : screenAwards();
+  var hasBlocks = (state.blocks || []).length > 0;
+  var reviewing = view.photo && view.photo.stage === "review";
+  if(!view.sel && !reviewing && ((tab === "words" && (state.words.length || hasBlocks)) || ((tab === "learn" || tab === "play" || tab === "test") && hasBlocks))){
+    node = h("div", { class:"stack" }, blockBar(), node);
+  }
   node.classList.add("enter");
   screenEl.appendChild(node);
 }
@@ -837,9 +965,40 @@ function plural(n, one, few, many){
 function screenWords(){
   if(view.photo && view.photo.stage === "review") return photoReview();
   var box = h("div", { class:"stack" });
-  if(state.words.length) box.appendChild(h("div", { class:"muted", text: state.words.length + " " + plural(state.words.length, "слово", "слова", "слов") }));
+  var shown = activeWords();
+  if(view.sel){
+    box.appendChild(h("div", { class:"row" },
+      h("div", { class:"grow", style:"font-weight:800", text:"Отметь слова для блока" }),
+      h("button", { class:"btn ghost small", type:"button", onclick:function(){
+        var all = shown.every(function(w){ return view.sel[w.id]; });
+        shown.forEach(function(w){ if(all) delete view.sel[w.id]; else view.sel[w.id] = true; });
+        render();
+      } }, shown.length && shown.every(function(w){ return view.sel[w.id]; }) ? "Снять все" : "Отметить все")));
+    var sl = h("div", { class:"wordlist" });
+    shown.slice().sort(function(a,b){ return (b.addedAt||0) - (a.addedAt||0); }).forEach(function(w){
+      var on = !!view.sel[w.id], b = blockById(w.block);
+      sl.appendChild(h("button", { class:"word selrow" + (on ? " on" : ""), type:"button", role:"checkbox", "aria-checked": on ? "true" : "false",
+        onclick:function(){ if(on) delete view.sel[w.id]; else view.sel[w.id] = true; render(); } },
+        h("span", { class:"ocrcheck" }, ico(on ? "check" : "circle", 20)),
+        h("span", { class:"grow", style:"text-align:left" }, h("div", { class:"word-en", text:full(w) }),
+          h("div", { class:"word-ru", text:w.ru + (b && !state.activeBlock ? " · " + b.name : "") }))
+      ));
+    });
+    box.appendChild(sl);
+    return box;
+  }
+  if(shown.length || state.words.length) box.appendChild(h("div", { class:"row" },
+    h("div", { class:"muted grow", text: shown.length + " " + plural(shown.length, "слово", "слова", "слов") }),
+    state.words.length > 1 ? h("button", { class:"btn ghost small", type:"button", onclick:function(){ view.sel = {}; view.form = null; view.blockMenu = false; render(); } }, "Разложить по блокам") : null));
 
   if(view.form) box.appendChild(view.form.editId ? wordForm() : quickForm());
+
+  if(state.words.length && !shown.length){
+    box.appendChild(h("div", { class:"empty stack" },
+      illo("empty-words", 150, "pop"),
+      h("p", { text:"В этом блоке пока нет слов. Добавь новые или разложи уже добавленные." })));
+    return box;
+  }
 
   if(!state.words.length){
     box.appendChild(h("div", { class:"empty stack" },
@@ -847,12 +1006,12 @@ function screenWords(){
       h("p", { text:"Пока пусто. Добавь первое слово!" }),
       canOcr() ? h("button", { class:"btn", type:"button", onclick:pickPhoto }, ico("camera"), "Слова с фото учебника") : null,
       h("button", { class:"btn ghost", type:"button", onclick:function(){
-        state.words = sampleWords(); save(); render(); toast("Добавлено 8 слов для примера");
+        var tb = targetBlock(); state.words = sampleWords(); state.words.forEach(function(w){ w.block = tb; }); save(); render(); toast("Добавлено 8 слов для примера");
       } }, "Взять 8 слов для примера")));
     return box;
   }
 
-  var sorted = state.words.slice().sort(function(a,b){ return (b.addedAt||0) - (a.addedAt||0); });
+  var sorted = shown.slice().sort(function(a,b){ return (b.addedAt||0) - (a.addedAt||0); });
   var list = h("div", { class:"wordlist" });
   sorted.forEach(function(w){ list.appendChild(wordRow(w)); });
   box.appendChild(list);
@@ -1025,8 +1184,9 @@ function startPhoto(file){
   stopListening();
   var run = ++ocrRun;
   var keep = view.photo && view.photo.items ? view.photo.items : [];
+  var keepTarget = view.photo ? view.photo.target : undefined;
   view.form = null;
-  view.photo = { stage:"reading", items:keep };
+  view.photo = { stage:"reading", items:keep, target:keepTarget };
   render();
   ocrOverlay("Готовлюсь читать… (в первый раз чуть дольше)", 0.02);
   ocrLog = function(m){
@@ -1046,14 +1206,14 @@ function startPhoto(file){
     found.forEach(function(it){ if(!have[norm(it.en)]){ have[norm(it.en)] = true; keep.push(it); } });
     document.getElementById("ocr").hidden = true;
     document.getElementById("ocr").textContent = "";
-    view.photo = { stage:"review", items:keep, found:found.length };
+    view.photo = { stage:"review", items:keep, found:found.length, target:keepTarget };
     render();
     if(screenEl) screenEl.scrollTop = 0;
   }).catch(function(err){
     if(run !== ocrRun) return;
     document.getElementById("ocr").hidden = true;
     document.getElementById("ocr").textContent = "";
-    view.photo = keep.length ? { stage:"review", items:keep, found:0 } : null;
+    view.photo = keep.length ? { stage:"review", items:keep, found:0, target:keepTarget } : null;
     render();
     toast(err && err.message === "image" ? "Не получилось открыть фото." : "Не получилось прочитать. Проверь интернет и попробуй ещё раз.");
   });
@@ -1302,6 +1462,14 @@ function photoReview(){
     ));
     return box;
   }
+  if(ph.target === undefined) ph.target = targetBlock() || "new";
+  var tgt = h("div", { class:"blocks wrap" }, h("span", { class:"label", style:"align-self:center", text:"В блок:" }));
+  (state.blocks || []).forEach(function(b){
+    tgt.appendChild(h("button", { class:"bchip" + (ph.target === b.id ? " on" : ""), type:"button", onclick:function(){ ph.target = b.id; render(); } }, h("span", { text:b.name })));
+  });
+  tgt.appendChild(h("button", { class:"bchip" + (ph.target === "new" ? " on" : ""), type:"button", onclick:function(){ ph.target = "new"; render(); } }, ico("plus", 16), h("span", { text:"Новый: " + nextBlockName() })));
+  tgt.appendChild(h("button", { class:"bchip" + (ph.target === "" ? " on" : ""), type:"button", onclick:function(){ ph.target = ""; render(); } }, h("span", { text:"Без блока" })));
+  box.appendChild(tgt);
   if(items.some(function(it){ return !(it.ru||"").trim(); })) box.appendChild(h("div", { class:"hint", text:"Где нет перевода — допиши его, и слово отметится." }));
   var list = h("div", { class:"stack ocrlist" });
   var addBtn = h("button", { class:"btn primary block", type:"button", onclick:addFromPhoto });
@@ -1353,19 +1521,30 @@ function photoReview(){
 }
 function addFromPhoto(){
   var items = view.photo.items, added = 0, have = {};
+  var tgtId = view.photo.target === undefined ? targetBlock() : view.photo.target;
+  var ready = items.some(function(it){ return it.on && splitArticle(it.en).en && (it.ru||"").trim(); });
+  var blockId = "", created = null;
+  if(ready && tgtId === "new"){ created = newBlock(false); blockId = created.id; }
+  else if(tgtId && blockById(tgtId)) blockId = tgtId;
   state.words.forEach(function(w){ have[norm(w.en)] = true; });
   items.forEach(function(it){
     if(!it.on) return;
     var sp = splitArticle(it.en), ru = (it.ru||"").trim();
     if(!sp.en || !ru || !/[A-Za-z]/.test(sp.en) || have[norm(sp.en)]) return;
     have[norm(sp.en)] = true;
-    state.words.push(makeWord(sp.en, ru, "", "", false, sp.art));
+    var nw = makeWord(sp.en, ru, "", "", false, sp.art);
+    nw.block = blockId;
+    state.words.push(nw);
     added++;
   });
-  if(!added){ toast("Отметь слова с переводом"); return; }
+  if(!added){
+    if(created) state.blocks = state.blocks.filter(function(b){ return b.id !== created.id; });
+    toast("Отметь слова с переводом"); return;
+  }
   addStars(added);
   stopOcr();
   view.photo = null;
+  state.activeBlock = blockId || state.activeBlock;
   checkBadges(); save(); render();
   toast("Добавлено " + added + " " + plural(added, "слово", "слова", "слов") + ". +" + added + " ★");
 }
@@ -1447,6 +1626,7 @@ function submitForm(){
     view.form = null;
   }else{
     var nw = makeWord(en, ru, "", "", false, art);
+    nw.block = targetBlock();
     state.words.push(nw);
     addStars(1);
     speak(full(nw), "en-US", 0.8);
@@ -1465,7 +1645,7 @@ function wordRow(w){
       view.openId = open ? null : w.id; render();
     } },
       h("div", { class:"word-en" }, full(w), w.sample ? h("span", { class:"tag", text:"пример" }) : null),
-      h("div", { class:"word-ru", text:w.ru })
+      h("div", { class:"word-ru" }, w.ru, !state.activeBlock && blockById(w.block) ? h("span", { class:"btag", text:blockById(w.block).name }) : null)
     ),
     w.level >= 5 ? h("span", { class:"done-mark", "aria-label":"Выучено" }, ico("check", 18)) : ring(w.level||0, 5, 30, 4)
   );
@@ -1525,9 +1705,9 @@ function wordRow(w){
 
 /* ============== screen: Учить (карточки) ============== */
 function screenLearn(){
-  if(state.words.length < 1) return needMore(1, "учить карточки");
+  if(activeWords().length < 1) return needMore(1, "учить карточки");
   if(!view.deck){
-    view.deck = pickWords(Math.min(10, state.words.length)).map(function(w){ return w.id; });
+    view.deck = pickWords(Math.min(10, activeWords().length)).map(function(w){ return w.id; });
     view.i = 0; view.flipped = false; view.done = 0;
   }
   var box = h("div", { class:"stack" });
@@ -1610,7 +1790,7 @@ function screenPlay(){
 
 /* --- игра: собери слово --- */
 function gameSpell(){
-  if(state.words.length < 1) return needMore(1, "играть");
+  if(activeWords().length < 1) return needMore(1, "играть");
   if(!view.g){
     var w = pickWords(1)[0];
     var letters = w.en.replace(/\s+/g, "").split("");
@@ -1671,7 +1851,7 @@ function gameSpell(){
 
 /* --- игра: составь предложение --- */
 function gameSentence(){
-  var pool = state.words.filter(function(w){ return w.ex && w.ex.trim().split(/\s+/).length >= 3; });
+  var pool = activeWords().filter(function(w){ return w.ex && w.ex.trim().split(/\s+/).length >= 3; });
   if(!pool.length){
     return h("div", { class:"empty" },
       h("p", { text:"Для этой игры нужны слова с примером предложения. Добавь пример к любому слову." }),
@@ -1733,7 +1913,7 @@ function gameSentence(){
 
 /* --- игра: найди пару --- */
 function gameMatch(){
-  if(state.words.length < 4) return needMore(4, "играть в пары");
+  if(activeWords().length < 4) return needMore(4, "играть в пары");
   if(!view.g){
     var ws = pickWords(4);
     var cards = [];
@@ -1778,7 +1958,7 @@ function gameMatch(){
 
 /* ============== screen: Тест ============== */
 function buildQuiz(){
-  var n = Math.min(10, state.words.length);
+  var n = Math.min(10, activeWords().length);
   var ws = pickWords(n);
   var types = ["enru", "ruen", "type"];
   if(canSpeak()) types.push("audio");
@@ -1802,10 +1982,10 @@ function buildQuiz(){
 }
 
 function screenTest(){
-  if(state.words.length < 4) return needMore(4, "пройти тест");
+  if(activeWords().length < 4) return needMore(4, "пройти тест");
   if(!view.quiz){
     var box = h("div", { class:"stack" });
-    var nq = Math.min(10, state.words.length);
+    var nq = Math.min(10, activeWords().length);
     box.appendChild(h("div", { class:"card stack center" },
       illo("test-start", 170, "pop"),
       h("div", { class:"bignum", text:String(nq) }),
